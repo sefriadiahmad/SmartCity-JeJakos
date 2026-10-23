@@ -208,6 +208,68 @@ const RoomModel = {
     const [res] = await db.execute('DELETE FROM rooms WHERE id = ?', [id]);
     return res.affectedRows > 0;
   },
+
+  async findAll({ page = 1, limit = 10, kos_id = null, is_available = null } = {}) {
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
+    const offset = (pageNum - 1) * limitNum;
+
+    const whereConditions = [];
+    const params = [];
+
+    if (kos_id) {
+      whereConditions.push('r.kos_id = ?');
+      params.push(parseInt(kos_id, 10));
+    }
+
+    if (is_available !== null && is_available !== undefined) {
+      whereConditions.push('r.is_available = ?');
+      params.push(is_available ? 1 : 0);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    const countSql = `SELECT COUNT(*) AS total FROM rooms r ${whereClause}`;
+    const [countRows] = await db.execute(countSql, params);
+    const total = countRows[0].total;
+
+    if (total === 0) {
+      return {
+        data: [],
+        total: 0,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: 0,
+      };
+    }
+
+    const selectSql = `
+      SELECT 
+        r.id, r.kos_id, r.room_number, r.price, r.pay_period,
+        r.description, r.is_available, r.created_at, r.updated_at,
+        k.name AS kos_name, k.owner_id
+      FROM rooms r
+      JOIN kos k ON r.kos_id = k.id
+      ${whereClause}
+      ORDER BY r.id DESC
+      LIMIT ? OFFSET ?
+    `;
+    const [rows] = await db.execute(selectSql, [...params, limitNum, offset]);
+
+    const data = rows.map((r) => ({
+      ...r,
+      price: parseFloat(r.price),
+      is_available: Boolean(r.is_available),
+    }));
+
+    return {
+      data,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum),
+    };
+  },
 };
 
 module.exports = RoomModel;
