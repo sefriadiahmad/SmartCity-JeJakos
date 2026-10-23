@@ -2,6 +2,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import HomePage from './pages/home/HomePage';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 
 export default function App() {
   return (
@@ -22,24 +25,9 @@ export default function App() {
                 </div>
               }
             />
-            <Route
-              path="/login"
-              element={
-                <div className="max-w-md mx-auto px-4 py-12 w-full text-center">
-                  <h1 className="text-2xl font-bold text-slate-900">Masuk ke JeJakos</h1>
-                  <p className="text-sm text-slate-600 mt-2">Siap untuk task T-12.</p>
-                </div>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <div className="max-w-md mx-auto px-4 py-12 w-full text-center">
-                  <h1 className="text-2xl font-bold text-slate-900">Daftar Akun Baru</h1>
-                  <p className="text-sm text-slate-600 mt-2">Siap untuk task T-12.</p>
-                </div>
-              }
-            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route
               path="*"
               element={
