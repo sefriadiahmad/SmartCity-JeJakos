@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import KosFilter from '../../components/kos/KosFilter';
+import KosCard from '../../components/kos/KosCard';
 import api from '../../services/api';
-import { formatCurrency } from '../../utils/formatCurrency';
-import { getPhotoUrl } from '../../utils/imageUrl';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -145,88 +144,9 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredKos.map((kos) => {
-              const photoSrc = getPhotoUrl(kos.primary_photo || kos.photos?.[0]?.photo_url);
-
-              return (
-                <div
-                  key={kos.id}
-                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
-                >
-                  <div>
-                    {/* Thumbnail */}
-                    <div className="relative aspect-4/3 bg-slate-100 overflow-hidden">
-                      {photoSrc ? (
-                        <img
-                          src={photoSrc}
-                          alt={kos.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">
-                          📷 Tanpa Foto
-                        </div>
-                      )}
-
-                      {/* Type Badge */}
-                      <span
-                        className={`absolute top-2.5 left-2.5 text-[10px] uppercase font-bold px-2 py-0.5 rounded-md shadow-xs ${
-                          kos.type === 'putra'
-                            ? 'bg-blue-600 text-white'
-                            : kos.type === 'putri'
-                            ? 'bg-pink-600 text-white'
-                            : 'bg-emerald-600 text-white'
-                        }`}
-                      >
-                        {kos.type}
-                      </span>
-
-                      {/* Rating Badge */}
-                      {kos.avg_rating > 0 && (
-                        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[11px] font-bold text-amber-600 flex items-center gap-1 shadow-xs">
-                          <span>★</span>
-                          <span>{kos.avg_rating}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4 space-y-2">
-                      <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition line-clamp-1">
-                        {kos.name}
-                      </h3>
-
-                      <p className="text-xs text-slate-500 line-clamp-1">
-                        📍 {kos.district ? `${kos.district}` : kos.address}
-                      </p>
-
-                      {/* Price */}
-                      <div className="pt-2 border-t border-slate-100 flex items-baseline justify-between">
-                        <div>
-                          <span className="text-[10px] text-slate-400 block">Mulai dari</span>
-                          <span className="text-sm font-extrabold text-emerald-700">
-                            {kos.min_price > 0 ? formatCurrency(kos.min_price) : '-'}
-                          </span>
-                          <span className="text-[10px] text-slate-500">/bln</span>
-                        </div>
-                        <span className="text-[11px] font-medium text-slate-500">
-                          {kos.available_rooms > 0 ? `${kos.available_rooms} kamar` : 'Penuh'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 pt-0">
-                    <Link
-                      to={`/kos?q=${encodeURIComponent(kos.name)}`}
-                      className="block w-full py-2 text-center text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded-xl transition"
-                    >
-                      Lihat Kos
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
+            {featuredKos.map((kos) => (
+              <KosCard key={kos.id} kos={kos} />
+            ))}
           </div>
         )}
       </section>
