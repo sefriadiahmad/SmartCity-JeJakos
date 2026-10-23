@@ -37,7 +37,7 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/kos', require('./routes/kos'));
+app.use('/api/kos', require('./routes/kos'));
 // app.use('/api/bookings', require('./routes/booking'));
 // app.use('/api/invoices', require('./routes/invoice'));
 // app.use('/api/conversations', require('./routes/chat'));
