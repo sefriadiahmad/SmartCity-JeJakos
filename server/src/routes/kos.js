@@ -78,4 +78,7 @@ router.delete(
   kosController.deletePhoto
 );
 
+// Rooms sub-router (/api/kos/:kosId/rooms)
+router.use('/:kosId/rooms', require('./room'));
+
 module.exports = router;
