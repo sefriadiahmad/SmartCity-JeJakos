@@ -926,7 +926,7 @@ function RoomsTab() {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <label className="text-xs font-semibold text-slate-600">Filter Status Kamar:</label>
           <select
@@ -1157,7 +1157,7 @@ function ReviewsTab({ onStatsChange, onFeedback }) {
           <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={modFilter}
             onChange={(e) => {

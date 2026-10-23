@@ -261,7 +261,7 @@ export default function PhotoUploadModal({ isOpen, onClose, kos, onPhotosUpdated
                       <button
                         type="button"
                         onClick={() => handleDeletePhoto(photo.id)}
-                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition shadow-sm hover:bg-red-700"
+                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/90 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition shadow-sm hover:bg-red-700"
                         title="Hapus foto"
                       >
                         <span className="text-xs">🗑</span>

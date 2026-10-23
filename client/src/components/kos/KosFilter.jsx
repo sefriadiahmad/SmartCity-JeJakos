@@ -315,12 +315,12 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
               </div>
             </div>
 
-            {/* Periode Bayar (F-10) */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2">
-                Periode Pembayaran (F-10)
-              </label>
-              <div className="flex gap-3">
+              {/* Periode Bayar (F-10) */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Periode Pembayaran (F-10)
+                </label>
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                 {[
                   { value: '', label: 'Semua Periode' },
                   { value: 'bulanan', label: 'Bulanan' },
