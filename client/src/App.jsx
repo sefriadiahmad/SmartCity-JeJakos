@@ -7,6 +7,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import SearchResultsPage from './pages/kos/SearchResultsPage';
+import KosDetailPage from './pages/kos/KosDetailPage';
 import PemilikDashboard from './pages/dashboard/PemilikDashboard';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -21,6 +22,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/kos" element={<SearchResultsPage />} />
+              <Route path="/kos/:id" element={<KosDetailPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
