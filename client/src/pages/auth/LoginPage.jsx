@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import useAuth from '../../hooks/useAuth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -28,18 +29,8 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const res = await api.post('/auth/login', {
-        email: formData.email,
-        password: formData.password,
-      });
-
-      const { accessToken, user } = res.data;
-      if (accessToken) {
-        localStorage.setItem('token', accessToken);
-      }
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      }
+      const data = await login(formData.email, formData.password);
+      const user = data.user;
 
       // Redirect based on role
       if (user?.role === 'admin') {

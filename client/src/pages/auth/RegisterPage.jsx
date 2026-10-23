@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import useAuth from '../../hooks/useAuth';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [role, setRole] = useState('pencari');
   const [formData, setFormData] = useState({
     name: '',
@@ -49,7 +50,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const res = await api.post('/auth/register', {
+      const data = await register({
         email: formData.email,
         password: formData.password,
         role,
@@ -58,8 +59,8 @@ export default function RegisterPage() {
       });
 
       setSuccessInfo({
-        message: res.data.message || 'Registrasi berhasil.',
-        token: res.data.verificationToken || null,
+        message: data.message || 'Registrasi berhasil.',
+        token: data.verificationToken || null,
         email: formData.email,
       });
     } catch (err) {

@@ -1,3 +1,5 @@
+const CURRENT_YEAR = new Date().getFullYear();
+
 export default function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-400 py-10 mt-auto border-t border-slate-800">
@@ -10,7 +12,7 @@ export default function Footer() {
           <p className="text-xs text-slate-500 mt-0.5">Jambi Smart City Application Challenge 2026</p>
         </div>
         <div className="mt-4 sm:mt-0 text-xs text-slate-500">
-          &copy; {new Date().getFullYear()} Tim Tri Nova - Universitas Nurdin Hamzah
+          &copy; {CURRENT_YEAR} Tim Tri Nova - Universitas Nurdin Hamzah
         </div>
       </div>
     </footer>
