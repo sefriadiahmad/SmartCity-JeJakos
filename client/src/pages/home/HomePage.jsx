@@ -1,116 +1,301 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import KosFilter from '../../components/kos/KosFilter';
+import api from '../../services/api';
+import { formatCurrency } from '../../utils/formatCurrency';
+import { getPhotoUrl } from '../../utils/imageUrl';
 
 export default function HomePage() {
-  const [keyword, setKeyword] = useState('');
-  const [district, setDistrict] = useState('');
   const navigate = useNavigate();
+  const [featuredKos, setFeaturedKos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    let active = true;
+    async function fetchFeatured() {
+      try {
+        const res = await api.get('/kos?limit=4');
+        if (active) {
+          setFeaturedKos(res.data?.data || []);
+        }
+      } catch {
+        // ignore error on home preview
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    fetchFeatured();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleSearch = (filterParams) => {
     const params = new URLSearchParams();
-    if (keyword) params.append('q', keyword);
-    if (district) params.append('district', district);
+    for (const [key, value] of Object.entries(filterParams)) {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, value);
+      }
+    }
     navigate(`/kos?${params.toString()}`);
+  };
+
+  const handleQuickTagClick = (tagParams) => {
+    handleSearch(tagParams);
   };
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Hero section */}
-      <section className="bg-gradient-to-b from-emerald-50 via-teal-50/40 to-white py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-block py-1 px-3 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold uppercase tracking-wider mb-4">
-            Provinsi Jambi
-          </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Temukan Kos Idaman Tanpa Ribet
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-b from-emerald-50/80 via-teal-50/30 to-white py-12 sm:py-20 px-4 sm:px-6 lg:px-8 border-b border-slate-100">
+        <div className="max-w-5xl mx-auto text-center space-y-6">
+          <div className="inline-flex items-center gap-2 py-1 px-3.5 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-bold uppercase tracking-wider">
+            <span>🏛️ Jambi Smart City Challenge 2026</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            Temukan Kos Idaman di{' '}
+            <span className="bg-gradient-to-r from-emerald-600 to-teal-700 bg-clip-text text-transparent">
+              Provinsi Jambi
+            </span>
           </h1>
-          <p className="mt-4 text-sm sm:text-lg text-slate-600 max-w-2xl mx-auto">
-            Cari kos dekat kampus & kantor di Jambi dengan verifikasi terpercaya, ulasan penghuni nyata, dan peta interaktif.
+
+          <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Platform digitalisasi rekam jejak hunian sewa pertama di Jambi. Dilengkapi pencarian geospasial akurat, ulasan penyewa asli, dan chatbot rekomendasi cerdas.
           </p>
 
-          {/* Search box - mobile-first stack, row on sm+ */}
-          <form
-            onSubmit={handleSearch}
-            className="mt-8 bg-white p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 flex flex-col sm:flex-row gap-3 text-left"
-          >
-            <div className="flex-1">
-              <label htmlFor="search-keyword" className="block text-xs font-semibold text-slate-500 mb-1">
-                Kata Kunci / Area / Kampus
-              </label>
-              <input
-                id="search-keyword"
-                type="text"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="cth. UNJA, Telanaipura, Mendalo"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
+          {/* Integrated Search Bar & Filter Panel */}
+          <div className="pt-2 text-left">
+            <KosFilter onSearch={handleSearch} />
+          </div>
 
-            <div className="sm:w-48">
-              <label htmlFor="search-district" className="block text-xs font-semibold text-slate-500 mb-1">
-                Kecamatan
-              </label>
-              <select
-                id="search-district"
-                value={district}
-                onChange={(e) => setDistrict(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-              >
-                <option value="">Semua Kecamatan</option>
-                <option value="Telanaipura">Telanaipura</option>
-                <option value="Jelutung">Jelutung</option>
-                <option value="Kotabaru">Kotabaru</option>
-                <option value="Danau Sipin">Danau Sipin</option>
-                <option value="Jambi Selatan">Jambi Selatan</option>
-                <option value="Pasar Jambi">Pasar Jambi</option>
-                <option value="Muaro Jambi">Muaro Jambi (UNJA Mendalo)</option>
-              </select>
-            </div>
-
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm transition shadow-sm"
-              >
-                Cari Kos
-              </button>
-            </div>
-          </form>
+          {/* Shortcut Tags */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <span className="text-slate-400 font-medium">Paling Banyak Dicari:</span>
+            <button
+              type="button"
+              onClick={() => handleQuickTagClick({ q: 'Mendalo', campus: 'UNJA Mendalo', lat: -1.6140, lng: 103.5200, sort: 'nearest' })}
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition shadow-2xs"
+            >
+              🎓 Dekat UNJA Mendalo
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickTagClick({ q: 'Sungai Duren', campus: 'UIN STS Jambi', lat: -1.6065, lng: 103.5095, sort: 'nearest' })}
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition shadow-2xs"
+            >
+              🕌 Dekat UIN STS
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickTagClick({ district: 'Danau Teluk', q: 'UNBARI' })}
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition shadow-2xs"
+            >
+              📚 Sekitar UNBARI
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickTagClick({ type: 'putri' })}
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-pink-700 hover:border-pink-500 transition shadow-2xs"
+            >
+              👧 Khusus Putri
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickTagClick({ max_price: 700000 })}
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-emerald-700 hover:border-emerald-500 transition shadow-2xs"
+            >
+              💰 Di Bawah 700rb
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Info features */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      {/* Featured Kos Populer Section (Wireframe 10.2) */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">
+              <span>🌟 Rekomendasi Teratas</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+              Kos Populer di Jambi
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Pilihan terverifikasi dekat kampus dan pusat perkantoran
+            </p>
+          </div>
+
+          <Link
+            to="/kos"
+            className="text-xs sm:text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 group"
+          >
+            <span>Lihat Semua Kos</span>
+            <span className="group-hover:translate-x-0.5 transition">→</span>
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="py-16 flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-3 border-emerald-600 border-t-transparent" />
+          </div>
+        ) : featuredKos.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
+            <p className="text-sm">Belum ada kos terverifikasi saat ini.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredKos.map((kos) => {
+              const photoSrc = getPhotoUrl(kos.primary_photo || kos.photos?.[0]?.photo_url);
+
+              return (
+                <div
+                  key={kos.id}
+                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
+                >
+                  <div>
+                    {/* Thumbnail */}
+                    <div className="relative aspect-4/3 bg-slate-100 overflow-hidden">
+                      {photoSrc ? (
+                        <img
+                          src={photoSrc}
+                          alt={kos.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">
+                          📷 Tanpa Foto
+                        </div>
+                      )}
+
+                      {/* Type Badge */}
+                      <span
+                        className={`absolute top-2.5 left-2.5 text-[10px] uppercase font-bold px-2 py-0.5 rounded-md shadow-xs ${
+                          kos.type === 'putra'
+                            ? 'bg-blue-600 text-white'
+                            : kos.type === 'putri'
+                            ? 'bg-pink-600 text-white'
+                            : 'bg-emerald-600 text-white'
+                        }`}
+                      >
+                        {kos.type}
+                      </span>
+
+                      {/* Rating Badge */}
+                      {kos.avg_rating > 0 && (
+                        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[11px] font-bold text-amber-600 flex items-center gap-1 shadow-xs">
+                          <span>★</span>
+                          <span>{kos.avg_rating}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4 space-y-2">
+                      <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition line-clamp-1">
+                        {kos.name}
+                      </h3>
+
+                      <p className="text-xs text-slate-500 line-clamp-1">
+                        📍 {kos.district ? `${kos.district}` : kos.address}
+                      </p>
+
+                      {/* Price */}
+                      <div className="pt-2 border-t border-slate-100 flex items-baseline justify-between">
+                        <div>
+                          <span className="text-[10px] text-slate-400 block">Mulai dari</span>
+                          <span className="text-sm font-extrabold text-emerald-700">
+                            {kos.min_price > 0 ? formatCurrency(kos.min_price) : '-'}
+                          </span>
+                          <span className="text-[10px] text-slate-500">/bln</span>
+                        </div>
+                        <span className="text-[11px] font-medium text-slate-500">
+                          {kos.available_rooms > 0 ? `${kos.available_rooms} kamar` : 'Penuh'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 pt-0">
+                    <Link
+                      to={`/kos?q=${encodeURIComponent(kos.name)}`}
+                      className="block w-full py-2 text-center text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded-xl transition"
+                    >
+                      Lihat Kos
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* AI Chatbot Banner (Design §5 & §7) */}
+      <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-emerald-800 via-teal-800 to-slate-900 text-white relative overflow-hidden shadow-xl">
+          <div className="relative z-10 max-w-2xl space-y-3">
+            <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold tracking-wider uppercase">
+              🤖 Fitur Smart City JeJakos
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Bingung Memilih Kos? Tanya JeJakos Bot!
+            </h2>
+            <p className="text-sm text-emerald-100/80 leading-relaxed">
+              Cukup ceritakan kebutuhan Anda lewat percakapan santai. Bot kami berbasis Google Gemini dengan RAG ketat yang hanya merekomendasikan kos yang benar-benar ada di database Jambi.
+            </p>
+            <div className="pt-2 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => handleSearch({ q: 'WiFi AC Mendalo', max_price: 800000 })}
+                className="px-4 py-2 rounded-xl bg-white text-emerald-900 text-xs font-bold hover:bg-emerald-50 transition shadow-sm"
+              >
+                Cari "Kos Dekat UNJA Ada AC & WiFi"
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3 Keunggulan Platform */}
+      <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full border-t border-slate-100">
+        <div className="text-center max-w-xl mx-auto mb-10">
+          <h2 className="text-2xl font-bold text-slate-900">
+            Mengapa Memilih JeJakos?
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Solusi digital cerdas untuk pemilik dan pencari kos di Provinsi Jambi
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold mb-3">
-              1
+          <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 text-2xl flex items-center justify-center font-bold">
+              📍
             </div>
-            <h3 className="text-base font-semibold text-slate-900">Peta & Jarak Akurat</h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Lihat lokasi kos di peta dan hitung jarak langsung ke titik kampus UNJA, UNBARI, atau kantor Anda.
+            <h3 className="text-base font-bold text-slate-900">Peta & Jarak Geospasial Akurat</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Hitung jarak rute dari titik acuan kampus UNJA Mendalo, UIN STS, UNBARI, atau kantor pemerintahan di Kota Jambi.
             </p>
           </div>
 
-          <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="w-10 h-10 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center font-bold mb-3">
-              2
+          <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 text-2xl flex items-center justify-center font-bold">
+              🛡️
             </div>
-            <h3 className="text-base font-semibold text-slate-900">Chatbot Cerdas RAG</h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Tanyakan kriteria kos yang Anda inginkan. Chatbot berbasis Google Gemini hanya merekomendasikan data kos nyata.
+            <h3 className="text-base font-bold text-slate-900">Listing Terverifikasi</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Setiap pemilik kos dan properti melalui verifikasi admin JeJakos untuk menjamin keamanan dari penipuan deposit.
             </p>
           </div>
 
-          <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="w-10 h-10 rounded-lg bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold mb-3">
-              3
+          <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-700 text-2xl flex items-center justify-center font-bold">
+              ⭐
             </div>
-            <h3 className="text-base font-semibold text-slate-900">Rekam Jejak Transparan</h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Ulasan terverifikasi dari penyewa nyata, tagihan otomatis terstruktur, dan penanganan tiket pengaduan.
+            <h3 className="text-base font-bold text-slate-900">Rekam Jejak Transparan</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Ulasan asli dari penyewa yang terbukti pernah tinggal, pencatatan pembayaran rapi, dan fasilitas pengaduan terintegrasi.
             </p>
           </div>
         </div>
