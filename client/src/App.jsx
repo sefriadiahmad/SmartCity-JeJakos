@@ -6,6 +6,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 import ProfilePage from './pages/profile/ProfilePage';
+import PemilikDashboard from './pages/dashboard/PemilikDashboard';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
@@ -37,6 +38,22 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['pemilik', 'admin']}>
+                    <PemilikDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-kos"
+                element={
+                  <ProtectedRoute allowedRoles={['pemilik', 'admin']}>
+                    <PemilikDashboard />
                   </ProtectedRoute>
                 }
               />
