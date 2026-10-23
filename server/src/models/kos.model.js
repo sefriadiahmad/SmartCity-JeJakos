@@ -166,6 +166,13 @@ const KosModel = {
     status = null,
     is_approved = null,
     facility_ids = [],
+    min_price = null,
+    max_price = null,
+    pay_period = null,
+    lat = null,
+    lng = null,
+    radius = null,
+    sort = null,
   } = {}) {
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
@@ -221,6 +228,41 @@ const KosModel = {
       }
     }
 
+    // Room price & pay_period filter
+    const roomConditions = [];
+    const roomParams = [];
+    if (min_price !== null && min_price !== undefined) {
+      roomConditions.push('r_sub.price >= ?');
+      roomParams.push(parseFloat(min_price));
+    }
+    if (max_price !== null && max_price !== undefined) {
+      roomConditions.push('r_sub.price <= ?');
+      roomParams.push(parseFloat(max_price));
+    }
+    if (pay_period) {
+      roomConditions.push('r_sub.pay_period = ?');
+      roomParams.push(pay_period);
+    }
+    if (roomConditions.length > 0) {
+      whereConditions.push(
+        `k.id IN (
+          SELECT r_sub.kos_id
+          FROM rooms r_sub
+          WHERE ${roomConditions.join(' AND ')}
+        )`
+      );
+      params.push(...roomParams);
+    }
+
+    // Geospatial distance & radius filter
+    const hasGeo = lat !== null && lat !== undefined && lng !== null && lng !== undefined && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng));
+    const pointWkt = hasGeo ? `POINT(${parseFloat(lat)} ${parseFloat(lng)})` : null;
+
+    if (hasGeo && radius !== null && radius !== undefined && !isNaN(parseFloat(radius))) {
+      whereConditions.push('ST_Distance_Sphere(k.location, ST_GeomFromText(?, 4326)) <= ?');
+      params.push(pointWkt, parseFloat(radius));
+    }
+
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
     // Count total matches
@@ -233,13 +275,37 @@ const KosModel = {
     );
     const total = countRows[0]?.total || 0;
 
-    // Fetch items with aggregates
-    const queryParams = [...params, limitNum, offset];
+    // Sorting
+    let orderByClause = 'ORDER BY k.created_at DESC';
+    if (sort === 'nearest' || sort === 'distance') {
+      if (hasGeo) {
+        orderByClause = 'ORDER BY distance_meters ASC';
+      }
+    } else if (sort === 'price_asc') {
+      orderByClause = 'ORDER BY min_price ASC, k.id ASC';
+    } else if (sort === 'price_desc') {
+      orderByClause = 'ORDER BY min_price DESC, k.id ASC';
+    } else if (sort === 'rating_desc') {
+      orderByClause = 'ORDER BY avg_rating DESC, total_reviews DESC, k.id ASC';
+    } else if (sort === 'newest') {
+      orderByClause = 'ORDER BY k.created_at DESC';
+    } else if (hasGeo) {
+      orderByClause = 'ORDER BY distance_meters ASC';
+    }
+
+    const distanceSelect = hasGeo
+      ? 'ROUND(ST_Distance_Sphere(k.location, ST_GeomFromText(?, 4326))) AS distance_meters,'
+      : '';
+    const queryParams = hasGeo
+      ? [pointWkt, ...params, limitNum, offset]
+      : [...params, limitNum, offset];
+
     const [rows] = await db.execute(
       `SELECT 
         k.id, k.owner_id, k.name, k.address,
         ST_Latitude(k.location) AS latitude,
         ST_Longitude(k.location) AS longitude,
+        ${distanceSelect}
         k.district, k.type, k.description,
         k.is_approved, k.status,
         k.created_at, k.updated_at,
@@ -255,7 +321,7 @@ const KosModel = {
       LEFT JOIN reviews rv ON k.id = rv.kos_id AND rv.is_moderated = 0
       ${whereClause}
       GROUP BY k.id, u.id
-      ORDER BY k.created_at DESC
+      ${orderByClause}
       LIMIT ? OFFSET ?`,
       queryParams
     );
@@ -307,7 +373,7 @@ const KosModel = {
     const data = rows.map((k) => {
       const photos = photosByKos[k.id] || [];
       const facilities = facilitiesByKos[k.id] || [];
-      return {
+      const item = {
         ...k,
         latitude: parseFloat(k.latitude),
         longitude: parseFloat(k.longitude),
@@ -321,6 +387,14 @@ const KosModel = {
         primary_photo: photos[0]?.photo_url || null,
         facilities,
       };
+
+      if (k.distance_meters !== undefined && k.distance_meters !== null) {
+        const dist = parseInt(k.distance_meters, 10);
+        item.distance_meters = dist;
+        item.distance_km = Number((dist / 1000).toFixed(2));
+      }
+
+      return item;
     });
 
     return {

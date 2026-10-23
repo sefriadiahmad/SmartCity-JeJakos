@@ -14,6 +14,15 @@ const KosController = {
         owner_id,
         facility_ids,
         is_approved,
+        min_price,
+        max_price,
+        pay_period,
+        lat,
+        latitude,
+        lng,
+        longitude,
+        radius,
+        sort,
       } = req.query;
 
       const isAdmin = req.user && req.user.role === 'admin';
@@ -39,6 +48,17 @@ const KosController = {
         }
       }
 
+      const rawLat = lat !== undefined ? lat : latitude;
+      const rawLng = lng !== undefined ? lng : longitude;
+      const parsedLat = rawLat !== undefined && !isNaN(parseFloat(rawLat)) ? parseFloat(rawLat) : null;
+      const parsedLng = rawLng !== undefined && !isNaN(parseFloat(rawLng)) ? parseFloat(rawLng) : null;
+
+      let radiusMeters = null;
+      if (radius !== undefined && !isNaN(parseFloat(radius))) {
+        radiusMeters = parseFloat(radius);
+        if (radiusMeters <= 50) radiusMeters *= 1000;
+      }
+
       const result = await KosModel.findAll({
         page,
         limit,
@@ -49,9 +69,93 @@ const KosController = {
         status: effectiveStatus,
         is_approved: effectiveIsApproved,
         facility_ids: parsedFacilityIds,
+        min_price: min_price !== undefined && !isNaN(parseFloat(min_price)) ? parseFloat(min_price) : null,
+        max_price: max_price !== undefined && !isNaN(parseFloat(max_price)) ? parseFloat(max_price) : null,
+        pay_period: pay_period || null,
+        lat: parsedLat,
+        lng: parsedLng,
+        radius: radiusMeters,
+        sort: sort || null,
       });
 
       res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async nearbyKos(req, res, next) {
+    try {
+      const {
+        lat,
+        latitude,
+        lng,
+        longitude,
+        radius = 5000,
+        page = 1,
+        limit = 10,
+        search,
+        q,
+        district,
+        type,
+        facility_ids,
+        min_price,
+        max_price,
+        pay_period,
+        sort,
+      } = req.query;
+
+      const rawLat = lat !== undefined ? lat : latitude;
+      const rawLng = lng !== undefined ? lng : longitude;
+
+      if (rawLat === undefined || rawLng === undefined) {
+        return res.status(400).json({ error: 'Parameter lat dan lng wajib diisi dengan koordinat valid' });
+      }
+
+      const parsedLat = parseFloat(rawLat);
+      const parsedLng = parseFloat(rawLng);
+
+      if (isNaN(parsedLat) || parsedLat < -90 || parsedLat > 90 || isNaN(parsedLng) || parsedLng < -180 || parsedLng > 180) {
+        return res.status(400).json({ error: 'Parameter lat dan lng wajib diisi dengan koordinat valid' });
+      }
+
+      let radiusMeters = parseFloat(radius) || 5000;
+      if (radiusMeters <= 50) {
+        radiusMeters *= 1000;
+      }
+
+      let parsedFacilityIds = [];
+      if (facility_ids) {
+        if (Array.isArray(facility_ids)) {
+          parsedFacilityIds = facility_ids;
+        } else if (typeof facility_ids === 'string') {
+          parsedFacilityIds = facility_ids.split(',').map((id) => id.trim()).filter(Boolean);
+        }
+      }
+
+      const result = await KosModel.findAll({
+        page,
+        limit,
+        search: search || q || null,
+        district: district || null,
+        type: type || null,
+        status: 'active',
+        is_approved: true,
+        facility_ids: parsedFacilityIds,
+        min_price: min_price !== undefined && !isNaN(parseFloat(min_price)) ? parseFloat(min_price) : null,
+        max_price: max_price !== undefined && !isNaN(parseFloat(max_price)) ? parseFloat(max_price) : null,
+        pay_period: pay_period || null,
+        lat: parsedLat,
+        lng: parsedLng,
+        radius: radiusMeters,
+        sort: sort || 'nearest',
+      });
+
+      res.json({
+        ...result,
+        center: { lat: parsedLat, lng: parsedLng },
+        radius_meters: radiusMeters,
+      });
     } catch (err) {
       next(err);
     }

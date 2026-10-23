@@ -11,6 +11,9 @@ const router = express.Router();
 // GET /api/kos/facilities — list master data fasilitas
 router.get('/facilities', kosController.getFacilities);
 
+// GET /api/kos/nearby — pencarian geospasial
+router.get('/nearby', auth.optional, kosController.nearbyKos);
+
 // GET /api/kos — list kos (public/filter/search)
 router.get('/', auth.optional, kosController.listKos);
 
