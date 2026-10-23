@@ -35,8 +35,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Routes (akan ditambahkan per task)
-// app.use('/api/auth', require('./routes/auth'));
+// Routes
+app.use('/api/auth', require('./routes/auth'));
 // app.use('/api/kos', require('./routes/kos'));
 // app.use('/api/bookings', require('./routes/booking'));
 // app.use('/api/invoices', require('./routes/invoice'));
@@ -54,9 +54,11 @@ app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server berjalan di http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`Server berjalan di http://localhost:${PORT}`);
+  });
+}
 
 // Export for testing
 module.exports = { app, server, io };
