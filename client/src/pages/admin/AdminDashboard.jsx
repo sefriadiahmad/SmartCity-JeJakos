@@ -47,21 +47,14 @@ export default function AdminDashboard() {
     let active = true;
     async function loadStats() {
       try {
-        const [usersRes, pendingOwnersRes, kosRes, pendingKosRes, reviewsRes] = await Promise.all([
-          api.get('/admin/users?limit=1'),
-          api.get('/admin/users?role=pemilik&is_approved=false&limit=1'),
-          api.get('/admin/kos?limit=1'),
-          api.get('/admin/kos?is_approved=false&limit=1'),
-          api.get('/admin/reviews?limit=1'),
-        ]);
-
-        if (active) {
+        const res = await api.get('/admin/dashboard');
+        if (active && res.data) {
           setStats({
-            totalUsers: usersRes.data?.total || 0,
-            pendingOwners: pendingOwnersRes.data?.total || 0,
-            totalKos: kosRes.data?.total || 0,
-            pendingKos: pendingKosRes.data?.total || 0,
-            totalReviews: reviewsRes.data?.total || 0,
+            totalUsers: res.data.totalUsers || 0,
+            pendingOwners: res.data.pendingOwners || 0,
+            totalKos: res.data.totalKos || 0,
+            pendingKos: res.data.pendingKos || 0,
+            totalReviews: res.data.totalReviews || 0,
           });
         }
       } catch {

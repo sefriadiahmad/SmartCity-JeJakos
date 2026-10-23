@@ -1,0 +1,942 @@
+{
+  "info": {
+    "_postman_id": "jejakos-sprint1-api-collection",
+    "name": "JeJakos API — Sprint 1",
+    "description": "Koleksi Postman / Thunder Client untuk pengujian endpoint Sprint 1: Auth flow, CRUD Kos & Kamar, Pencarian & Geospasial, dan Admin Endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ownerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pencariToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "kosId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "roomId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth Flow",
+      "item": [
+        {
+          "name": "Register - Pencari",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pencari.baru@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"pencari\",\n  \"name\": \"Pencari Baru Jambi\",\n  \"phone\": \"081234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register - Pemilik",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pemilik.baru@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"pemilik\",\n  \"name\": \"Pemilik Baru Telanaipura\",\n  \"phone\": \"081299998888\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register - Duplicate Email (Negative 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@jejakos.id\",\n  \"password\": \"password123\",\n  \"role\": \"pencari\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login - Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) { pm.collectionVariables.set('adminToken', res.accessToken); pm.collectionVariables.set('accessToken', res.accessToken); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@jejakos.id\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Pemilik (Pak Budi)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) { pm.collectionVariables.set('ownerToken', res.accessToken); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"budi.pemilik@gmail.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Pencari (Ari)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) { pm.collectionVariables.set('pencariToken', res.accessToken); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ari.pencari@gmail.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Wrong Password (Negative 401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@jejakos.id\",\n  \"password\": \"passwordsalah\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<verification_token_from_register>\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "verify-email"]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"budi.pemilik@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "forgot-password"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<reset_token_from_forgot_password>\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh-token"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin JeJakos Utama\",\n  \"phone\": \"081234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. CRUD Kos",
+      "item": [
+        {
+          "name": "List Master Facilities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/facilities",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "facilities"]
+            }
+          }
+        },
+        {
+          "name": "List Kos (Public Approved)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detail Kos by ID (Kos 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1"]
+            }
+          }
+        },
+        {
+          "name": "Detail Kos Not Found (Negative 404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/99999",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "99999"]
+            }
+          }
+        },
+        {
+          "name": "Create Kos (Pemilik Budi)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kos Baru Postman Test\",\n  \"address\": \"Jl. Arif Rahman Hakim No. 10, Telanaipura\",\n  \"latitude\": -1.6030,\n  \"longitude\": 103.5920,\n  \"district\": \"Danau Teluk\",\n  \"type\": \"campur\",\n  \"description\": \"Kos bersih baru ditambahkan via Postman runner\",\n  \"facility_ids\": [1, 2, 7]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kos",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"]
+            }
+          }
+        },
+        {
+          "name": "Create Kos Forbidden (Pencari - Negative 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{pencariToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kos Pencari Ilegal\",\n  \"address\": \"Jl. Sembarang\",\n  \"latitude\": -1.6,\n  \"longitude\": 103.5,\n  \"type\": \"putra\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kos",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"]
+            }
+          }
+        },
+        {
+          "name": "Update Kos (Pemilik Budi)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kos Putra Mendalo Asri (Updated)\",\n  \"description\": \"Deskripsi kos telah diperbarui via test suite.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Kos Unauthorized (Other Owner - Negative 403)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{pencariToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kos Hacked\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1"]
+            }
+          }
+        },
+        {
+          "name": "Upload Kos Photo (JSON URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"photo_url\": \"https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800\",\n  \"sort_order\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kos/1/photos",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1", "photos"]
+            }
+          }
+        },
+        {
+          "name": "Delete Photo (Negative 403 Other Owner)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{pencariToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/kos/1/photos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1", "photos", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. CRUD Kamar",
+      "item": [
+        {
+          "name": "List Rooms of Kos (Kos 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/1/rooms",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1", "rooms"]
+            }
+          }
+        },
+        {
+          "name": "List Rooms Available Only (Kos 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/1/rooms?available=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1", "rooms"],
+              "query": [{ "key": "available", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "Detail Room by ID (Room 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/1/rooms/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1", "rooms", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Room (Pemilik Budi)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"room_number\": \"Kamar VIP Baru\",\n  \"price\": 850000,\n  \"pay_period\": \"bulanan\",\n  \"description\": \"Kamar ber-AC baru ditambahkan\",\n  \"is_available\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kos/1/rooms",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1", "rooms"]
+            }
+          }
+        },
+        {
+          "name": "Create Room Forbidden (Pencari - Negative 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{pencariToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 500000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kos/1/rooms",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1", "rooms"]
+            }
+          }
+        },
+        {
+          "name": "Update Room (Pemilik Budi)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 600000,\n  \"description\": \"Harga dan fasilitas kamar diperbarui\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kos/1/rooms/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "1", "rooms", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Pencarian & Geospasial",
+      "item": [
+        {
+          "name": "Nearby Kos around UNJA Mendalo (Radius 2000m)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/nearby?lat=-1.6140&lng=103.5200&radius=2000",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "nearby"],
+              "query": [
+                { "key": "lat", "value": "-1.6140" },
+                { "key": "lng", "value": "103.5200" },
+                { "key": "radius", "value": "2000" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Nearby Kos Distance in KM (radius=2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/nearby?lat=-1.6140&lng=103.5200&radius=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "nearby"],
+              "query": [
+                { "key": "lat", "value": "-1.6140" },
+                { "key": "lng", "value": "103.5200" },
+                { "key": "radius", "value": "2" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Nearby Missing Lat/Lng (Negative 400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/nearby",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "nearby"]
+            }
+          }
+        },
+        {
+          "name": "Search by Keyword (q=Mendalo)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos?q=Mendalo",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"],
+              "query": [{ "key": "q", "value": "Mendalo" }]
+            }
+          }
+        },
+        {
+          "name": "Filter by District (Danau Teluk)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos?district=Danau%20Teluk",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"],
+              "query": [{ "key": "district", "value": "Danau Teluk" }]
+            }
+          }
+        },
+        {
+          "name": "Filter by Type (putri)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos?type=putri",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"],
+              "query": [{ "key": "type", "value": "putri" }]
+            }
+          }
+        },
+        {
+          "name": "Filter by Price Range (500k - 700k)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos?min_price=500000&max_price=700000",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"],
+              "query": [
+                { "key": "min_price", "value": "500000" },
+                { "key": "max_price", "value": "700000" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter by Pay Period (tahunan)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos?pay_period=tahunan",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"],
+              "query": [{ "key": "pay_period", "value": "tahunan" }]
+            }
+          }
+        },
+        {
+          "name": "Filter by Facilities (WiFi & AC: 1,2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos?facility_ids=1,2",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"],
+              "query": [{ "key": "facility_ids", "value": "1,2" }]
+            }
+          }
+        },
+        {
+          "name": "Sort by Price Ascending",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos?sort=price_asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"],
+              "query": [{ "key": "sort", "value": "price_asc" }]
+            }
+          }
+        },
+        {
+          "name": "Sort by Price Descending",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos?sort=price_desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos"],
+              "query": [{ "key": "sort", "value": "price_desc" }]
+            }
+          }
+        },
+        {
+          "name": "Combined Search (Nearby + Filter Putri + Max Price)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kos/nearby?lat=-1.6140&lng=103.5200&radius=5000&type=putri&max_price=700000",
+              "host": ["{{baseUrl}}"],
+              "path": ["kos", "nearby"],
+              "query": [
+                { "key": "lat", "value": "-1.6140" },
+                { "key": "lng", "value": "103.5200" },
+                { "key": "radius", "value": "5000" },
+                { "key": "type", "value": "putri" },
+                { "key": "max_price", "value": "700000" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Admin Endpoints",
+      "item": [
+        {
+          "name": "Admin Dashboard Platform Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "List Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Pending Owners (is_approved=false)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?role=pemilik&is_approved=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"],
+              "query": [
+                { "key": "role", "value": "pemilik" },
+                { "key": "is_approved", "value": "false" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Detail by ID (User 2)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users", "2"]
+            }
+          }
+        },
+        {
+          "name": "Approve Pemilik (User 2)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_approved\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/2/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users", "2", "approve"]
+            }
+          }
+        },
+        {
+          "name": "List All Kos (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/kos",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "kos"]
+            }
+          }
+        },
+        {
+          "name": "Get Kos Detail (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/kos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "kos", "1"]
+            }
+          }
+        },
+        {
+          "name": "Approve Kos Listing (Kos 1)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_approved\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/kos/1/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "kos", "1", "approve"]
+            }
+          }
+        },
+        {
+          "name": "List Rooms Across Kos (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/rooms",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "rooms"]
+            }
+          }
+        },
+        {
+          "name": "List Reviews for Moderation (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "reviews"]
+            }
+          }
+        },
+        {
+          "name": "Moderate Review (Flag / Sembunyikan)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_moderated\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews/1/moderate",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "reviews", "1", "moderate"]
+            }
+          }
+        },
+        {
+          "name": "Delete Review (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "reviews", "1"]
+            }
+          }
+        },
+        {
+          "name": "Admin Endpoint Forbidden for Non-Admin (Negative 403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{pencariToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "dashboard"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

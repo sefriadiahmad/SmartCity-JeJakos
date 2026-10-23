@@ -35,6 +35,25 @@ async function runTests() {
   let testReviewId = null;
 
   try {
+    // 0. Dashboard Stats (design.md §3)
+    console.log('0. Testing GET /api/admin/dashboard...');
+    const dashNoAuth = await fetch(`${baseUrl}/dashboard`);
+    assert.strictEqual(dashNoAuth.status, 401);
+
+    const dashRes = await fetch(`${baseUrl}/dashboard`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    assert.strictEqual(dashRes.status, 200);
+    const dashData = await dashRes.json();
+    assert.strictEqual(typeof dashData.totalUsers, 'number');
+    assert.strictEqual(typeof dashData.pendingOwners, 'number');
+    assert.strictEqual(typeof dashData.totalKos, 'number');
+    assert.strictEqual(typeof dashData.pendingKos, 'number');
+    assert.strictEqual(typeof dashData.totalReviews, 'number');
+    assert.strictEqual(typeof dashData.totalRooms, 'number');
+    assert.ok(dashData.totalUsers >= 6);
+    assert.ok(dashData.totalKos >= 8);
+
     // 1. RBAC & Auth checks
     console.log('1. Testing RBAC & Auth on /api/admin/users...');
     const noAuthRes = await fetch(`${baseUrl}/users`);

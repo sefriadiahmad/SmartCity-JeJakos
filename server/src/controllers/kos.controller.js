@@ -203,7 +203,9 @@ const KosController = {
 
       const isAdmin = req.user.role === 'admin';
       const targetOwnerId = isAdmin && owner_id ? parseInt(owner_id, 10) : req.user.id;
-      const initialApproved = isAdmin && is_approved !== undefined ? Boolean(is_approved) : false;
+      const initialApproved = isAdmin && is_approved !== undefined
+        ? (is_approved === true || is_approved === 'true' || is_approved === 1 || is_approved === '1')
+        : false;
 
       let parsedFacilityIds = [];
       if (facility_ids) {
@@ -284,7 +286,7 @@ const KosController = {
         updateFields.longitude = parseFloat(longitude);
       }
       if (isAdmin && is_approved !== undefined) {
-        updateFields.is_approved = Boolean(is_approved);
+        updateFields.is_approved = is_approved === true || is_approved === 'true' || is_approved === 1 || is_approved === '1';
       }
 
       if (facility_ids !== undefined) {

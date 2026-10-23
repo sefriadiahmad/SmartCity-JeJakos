@@ -9,7 +9,8 @@ const router = express.Router();
 router.use(auth);
 router.use(rbac('admin'));
 
-// F-17, F-15: Manajemen User
+// F-17, F-15: Manajemen User & Dashboard
+router.get('/dashboard', adminController.getDashboard);
 router.get('/users', adminController.listUsers);
 router.get('/users/:id', adminController.getUserById);
 router.put('/users/:id/approve', adminController.approveUser);

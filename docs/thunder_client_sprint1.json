@@ -1,0 +1,153 @@
+{
+  "clientName": "Thunder Client",
+  "collectionName": "JeJakos API — Sprint 1",
+  "collectionId": "jejakos-sprint1-thunder",
+  "dateExported": "2026-10-23T08:50:00.000Z",
+  "version": "1.1",
+  "folders": [
+    {
+      "_id": "f_auth",
+      "name": "1. Auth Flow",
+      "containerId": "",
+      "created": "2026-10-23T08:50:00.000Z"
+    },
+    {
+      "_id": "f_kos",
+      "name": "2. CRUD Kos",
+      "containerId": "",
+      "created": "2026-10-23T08:50:00.000Z"
+    },
+    {
+      "_id": "f_room",
+      "name": "3. CRUD Kamar",
+      "containerId": "",
+      "created": "2026-10-23T08:50:00.000Z"
+    },
+    {
+      "_id": "f_search",
+      "name": "4. Pencarian & Geospasial",
+      "containerId": "",
+      "created": "2026-10-23T08:50:00.000Z"
+    },
+    {
+      "_id": "f_admin",
+      "name": "5. Admin Endpoints",
+      "containerId": "",
+      "created": "2026-10-23T08:50:00.000Z"
+    }
+  ],
+  "requests": [
+    {
+      "_id": "r_auth_register",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_auth",
+      "name": "Register User",
+      "url": "http://localhost:5000/api/auth/register",
+      "method": "POST",
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"email\": \"pencari.thunder@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"pencari\",\n  \"name\": \"Pencari Thunder\",\n  \"phone\": \"081299990000\"\n}"
+      }
+    },
+    {
+      "_id": "r_auth_login_admin",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_auth",
+      "name": "Login Admin",
+      "url": "http://localhost:5000/api/auth/login",
+      "method": "POST",
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"email\": \"admin@jejakos.id\",\n  \"password\": \"admin123\"\n}"
+      }
+    },
+    {
+      "_id": "r_auth_login_pemilik",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_auth",
+      "name": "Login Pemilik",
+      "url": "http://localhost:5000/api/auth/login",
+      "method": "POST",
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"email\": \"budi.pemilik@gmail.com\",\n  \"password\": \"admin123\"\n}"
+      }
+    },
+    {
+      "_id": "r_auth_me",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_auth",
+      "name": "Get Profile /me",
+      "url": "http://localhost:5000/api/auth/me",
+      "method": "GET",
+      "auth": { "type": "bearer", "bearer": "{{adminToken}}" }
+    },
+    {
+      "_id": "r_kos_facilities",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_kos",
+      "name": "List Facilities",
+      "url": "http://localhost:5000/api/kos/facilities",
+      "method": "GET"
+    },
+    {
+      "_id": "r_kos_list",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_kos",
+      "name": "List Kos Public",
+      "url": "http://localhost:5000/api/kos",
+      "method": "GET"
+    },
+    {
+      "_id": "r_kos_detail",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_kos",
+      "name": "Detail Kos by ID",
+      "url": "http://localhost:5000/api/kos/1",
+      "method": "GET"
+    },
+    {
+      "_id": "r_room_list",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_room",
+      "name": "List Rooms of Kos",
+      "url": "http://localhost:5000/api/kos/1/rooms",
+      "method": "GET"
+    },
+    {
+      "_id": "r_search_nearby",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_search",
+      "name": "Nearby Kos Mendalo",
+      "url": "http://localhost:5000/api/kos/nearby?lat=-1.6140&lng=103.5200&radius=2000",
+      "method": "GET"
+    },
+    {
+      "_id": "r_admin_dash",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_admin",
+      "name": "Admin Dashboard Stats",
+      "url": "http://localhost:5000/api/admin/dashboard",
+      "method": "GET",
+      "auth": { "type": "bearer", "bearer": "{{adminToken}}" }
+    },
+    {
+      "_id": "r_admin_users",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_admin",
+      "name": "Admin Users List",
+      "url": "http://localhost:5000/api/admin/users",
+      "method": "GET",
+      "auth": { "type": "bearer", "bearer": "{{adminToken}}" }
+    },
+    {
+      "_id": "r_admin_kos",
+      "colId": "jejakos-sprint1-thunder",
+      "containerId": "f_admin",
+      "name": "Admin Kos List",
+      "url": "http://localhost:5000/api/admin/kos",
+      "method": "GET",
+      "auth": { "type": "bearer", "bearer": "{{adminToken}}" }
+    }
+  ]
+}

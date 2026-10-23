@@ -1,9 +1,33 @@
+const db = require('../config/db');
 const UserModel = require('../models/user.model');
 const KosModel = require('../models/kos.model');
 const RoomModel = require('../models/room.model');
 const ReviewModel = require('../models/review.model');
 
 const AdminController = {
+  // GET /api/admin/dashboard — statistik platform (design.md §3 line 332)
+  async getDashboard(req, res, next) {
+    try {
+      const [[{ totalUsers }]] = await db.execute('SELECT COUNT(*) AS totalUsers FROM users');
+      const [[{ pendingOwners }]] = await db.execute("SELECT COUNT(*) AS pendingOwners FROM users WHERE role = 'pemilik' AND is_approved = 0");
+      const [[{ totalKos }]] = await db.execute('SELECT COUNT(*) AS totalKos FROM kos');
+      const [[{ pendingKos }]] = await db.execute('SELECT COUNT(*) AS pendingKos FROM kos WHERE is_approved = 0');
+      const [[{ totalReviews }]] = await db.execute('SELECT COUNT(*) AS totalReviews FROM reviews');
+      const [[{ totalRooms }]] = await db.execute('SELECT COUNT(*) AS totalRooms FROM rooms');
+
+      res.json({
+        totalUsers: Number(totalUsers),
+        pendingOwners: Number(pendingOwners),
+        totalKos: Number(totalKos),
+        pendingKos: Number(pendingKos),
+        totalReviews: Number(totalReviews),
+        totalRooms: Number(totalRooms),
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   // GET /api/admin/users — list pengguna (filter & pagination)
   async listUsers(req, res, next) {
     try {
@@ -78,9 +102,9 @@ const AdminController = {
 
       let targetApproved = true;
       if (is_approved !== undefined) {
-        targetApproved = Boolean(is_approved);
+        targetApproved = is_approved === true || is_approved === 'true' || is_approved === 1 || is_approved === '1';
       } else if (approve !== undefined) {
-        targetApproved = Boolean(approve);
+        targetApproved = approve === true || approve === 'true' || approve === 1 || approve === '1';
       }
 
       await UserModel.setApproved(id, targetApproved);
@@ -168,9 +192,9 @@ const AdminController = {
 
       let targetApproved = true;
       if (is_approved !== undefined) {
-        targetApproved = Boolean(is_approved);
+        targetApproved = is_approved === true || is_approved === 'true' || is_approved === 1 || is_approved === '1';
       } else if (approve !== undefined) {
-        targetApproved = Boolean(approve);
+        targetApproved = approve === true || approve === 'true' || approve === 1 || approve === '1';
       }
 
       await KosModel.update(id, { is_approved: targetApproved });
@@ -256,9 +280,9 @@ const AdminController = {
 
       let targetModerated = true;
       if (is_moderated !== undefined) {
-        targetModerated = Boolean(is_moderated);
+        targetModerated = is_moderated === true || is_moderated === 'true' || is_moderated === 1 || is_moderated === '1';
       } else if (moderate !== undefined) {
-        targetModerated = Boolean(moderate);
+        targetModerated = moderate === true || moderate === 'true' || moderate === 1 || moderate === '1';
       }
 
       await ReviewModel.setModerated(id, targetModerated);
