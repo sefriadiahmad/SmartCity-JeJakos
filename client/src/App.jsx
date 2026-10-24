@@ -11,6 +11,7 @@ import KosDetailPage from './pages/kos/KosDetailPage';
 import PemilikDashboard from './pages/dashboard/PemilikDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import ChatbotWidget from './components/chatbot/ChatbotWidget';
 import { AuthProvider } from './context/AuthContext';
 
 export default function App() {
@@ -103,6 +104,7 @@ export default function App() {
             </Routes>
           </main>
           <Footer />
+          <ChatbotWidget />
         </div>
       </Router>
     </AuthProvider>

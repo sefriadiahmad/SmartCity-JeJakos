@@ -167,10 +167,18 @@ export default function HomePage() {
             <div className="pt-2 flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() => handleSearch({ q: 'WiFi AC Mendalo', max_price: 800000 })}
-                className="px-4 py-2 rounded-xl bg-white text-emerald-900 text-xs font-bold hover:bg-emerald-50 transition shadow-sm"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-chatbot'))}
+                className="px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-extrabold text-xs transition shadow-md flex items-center gap-2 cursor-pointer"
               >
-                Cari "Kos Dekat UNJA Ada AC & WiFi"
+                <span>🤖</span>
+                <span>Buka Tanya JeJakos</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSearch({ q: 'WiFi AC Mendalo', max_price: 800000 })}
+                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition border border-white/20 cursor-pointer"
+              >
+                Contoh: "Kos Dekat UNJA Ada AC & WiFi"
               </button>
             </div>
           </div>
