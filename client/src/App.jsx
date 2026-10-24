@@ -10,6 +10,7 @@ import SearchResultsPage from './pages/kos/SearchResultsPage';
 import KosDetailPage from './pages/kos/KosDetailPage';
 import PemilikDashboard from './pages/dashboard/PemilikDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import ConversationsPage from './pages/chat/ConversationsPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ChatbotWidget from './components/chatbot/ChatbotWidget';
 import { AuthProvider } from './context/AuthContext';
@@ -33,6 +34,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/conversations"
+                element={
+                  <ProtectedRoute>
+                    <ConversationsPage />
                   </ProtectedRoute>
                 }
               />

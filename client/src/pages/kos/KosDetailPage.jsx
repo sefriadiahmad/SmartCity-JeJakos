@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
@@ -29,12 +30,42 @@ function calculateDistanceKm(lat1, lon1, lat2, lon2) {
 
 export default function KosDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [kos, setKos] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activePhotoModal, setActivePhotoModal] = useState(false);
   const [bookingModalRoom, setBookingModalRoom] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [startingChat, setStartingChat] = useState(false);
+
+  const handleChatOwner = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (user.id === kos?.owner_id) {
+      alert('Ini adalah kos milik Anda sendiri.');
+      return;
+    }
+
+    setStartingChat(true);
+    try {
+      const res = await api.post('/conversations', {
+        kos_id: kos.id,
+        recipient_id: kos.owner_id,
+      });
+      const convId = res.data?.conversation?.id;
+      if (convId) {
+        navigate(`/conversations?id=${convId}`);
+      }
+    } catch (err) {
+      alert(err.response?.data?.error || 'Gagal memulai percakapan');
+    } finally {
+      setStartingChat(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -517,6 +548,16 @@ export default function KosDetailPage() {
                   }`}
                 >
                   {availableRoomsCount > 0 ? 'Pesan Kamar Sekarang' : 'Kamar Saat Ini Penuh'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleChatOwner}
+                  disabled={startingChat}
+                  className="w-full py-2.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+                >
+                  <span>💬</span>
+                  <span>{startingChat ? 'Menghubungkan...' : 'Chat Pemilik di JeJakos'}</span>
                 </button>
 
                 {kos.owner_phone && (

@@ -60,6 +60,11 @@ export default function Navbar() {
                 Panel Admin
               </Link>
             )}
+            {isAuthenticated && (
+              <Link to="/conversations" className="hover:text-emerald-600 transition flex items-center gap-1">
+                <span>Pesan</span>
+              </Link>
+            )}
           </nav>
 
           {/* Desktop Auth Section */}
@@ -178,6 +183,16 @@ export default function Navbar() {
                 className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
               >
                 Panel Admin
+              </Link>
+            )}
+            {isAuthenticated && (
+              <Link
+                to="/conversations"
+                onClick={() => setIsOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+              >
+                <span>💬</span>
+                <span>Pesan</span>
               </Link>
             )}
 
