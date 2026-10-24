@@ -249,7 +249,11 @@ export default function ChatbotWidget({ defaultOpen = false }) {
           {/* Messages Scroll Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
             {messages.map((msg) => (
-              <ChatbotMessage key={msg.id} message={msg} />
+              <ChatbotMessage
+                key={msg.id}
+                message={msg}
+                onPromptSelect={handleSendMessage}
+              />
             ))}
 
             {/* Quick Suggestion Chips (when only initial message is present) */}

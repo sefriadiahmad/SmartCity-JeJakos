@@ -1,9 +1,15 @@
 import { Link } from 'react-router-dom';
-import { formatCurrency } from '../../utils/formatCurrency';
-import { getPhotoUrl } from '../../utils/imageUrl';
+import ChatbotKosCard from './ChatbotKosCard';
 
 /**
- * Format markdown-like text (bold, list items, links /kos/:id) into React elements
+ * Enhanced markdown-like parser for chatbot text responses:
+ * Supports:
+ * - Bold: **text**
+ * - Markdown links: [Label](/kos/1) or [Label](https://...)
+ * - Plain paths: /kos/1
+ * - Headers: ### Header
+ * - Bulleted lists: - item, * item
+ * - Numbered lists: 1. item
  */
 function renderFormattedContent(text) {
   if (!text) return null;
@@ -11,41 +17,83 @@ function renderFormattedContent(text) {
   const lines = text.split('\n');
 
   return lines.map((line, lineIdx) => {
-    // Empty lines as vertical spacing
-    if (!line.trim()) {
-      return <div key={lineIdx} className="h-2" />;
+    const trimmed = line.trim();
+
+    // Empty lines as vertical space
+    if (!trimmed) {
+      return <div key={lineIdx} className="h-1.5" />;
     }
 
-    // Parse bold **text** and links /kos/:id
+    // Markdown Headers (### or ##)
+    const headerMatch = trimmed.match(/^(#{1,3})\s+(.+)$/);
+    if (headerMatch) {
+      return (
+        <h4 key={lineIdx} className="font-bold text-slate-900 text-xs sm:text-sm mt-1.5 mb-0.5">
+          {headerMatch[2]}
+        </h4>
+      );
+    }
+
+    // Parse inline tokens: bold **...**, markdown links [...](...), and /kos/:id
     const parts = [];
-    const regex = /(\*\*.*?\*\*|\/kos\/\d+)/g;
+    // Regex for:
+    // 1: \[([^\]]+)\]\(([^)]+)\)  --> markdown link
+    // 2: \*\*([^*]+)\*\*          --> bold
+    // 3: \/kos\/\d+               --> plain kos link
+    const inlineRegex = /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|(\/kos\/\d+)/g;
     let lastIndex = 0;
     let match;
 
-    while ((match = regex.exec(line)) !== null) {
+    while ((match = inlineRegex.exec(line)) !== null) {
       if (match.index > lastIndex) {
         parts.push(line.substring(lastIndex, match.index));
       }
 
-      const token = match[0];
-      if (token.startsWith('**') && token.endsWith('**')) {
+      const [, linkText, linkUrl, boldText, plainKosLink] = match;
+
+      if (linkText && linkUrl) {
+        if (linkUrl.startsWith('/kos/')) {
+          parts.push(
+            <Link
+              key={`${lineIdx}-${match.index}`}
+              to={linkUrl}
+              className="text-emerald-700 hover:text-emerald-800 underline font-semibold"
+            >
+              {linkText}
+            </Link>
+          );
+        } else {
+          parts.push(
+            <a
+              key={`${lineIdx}-${match.index}`}
+              href={linkUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-emerald-700 hover:text-emerald-800 underline font-semibold"
+            >
+              {linkText}
+            </a>
+          );
+        }
+      } else if (boldText) {
         parts.push(
-          <strong key={`${lineIdx}-${match.index}`} className="font-semibold text-slate-900">
-            {token.slice(2, -2)}
+          <strong key={`${lineIdx}-${match.index}`} className="font-bold text-slate-900">
+            {boldText}
           </strong>
         );
-      } else if (token.startsWith('/kos/')) {
+      } else if (plainKosLink) {
         parts.push(
           <Link
             key={`${lineIdx}-${match.index}`}
-            to={token}
-            className="text-emerald-600 hover:text-emerald-700 underline font-medium"
+            to={plainKosLink}
+            className="text-emerald-700 hover:text-emerald-800 underline font-semibold"
           >
-            {token}
+            {plainKosLink}
           </Link>
         );
       }
-      lastIndex = regex.lastIndex;
+
+      lastIndex = inlineRegex.lastIndex;
     }
 
     if (lastIndex < line.length) {
@@ -53,13 +101,13 @@ function renderFormattedContent(text) {
     }
 
     // List item styling
-    const isBullet = /^[•\-*]\s/.test(line.trim());
-    const isNumbered = /^\d+\.\s/.test(line.trim());
+    const isBullet = /^[•\-*]\s/.test(trimmed);
+    const isNumbered = /^\d+\.\s/.test(trimmed);
 
     if (isBullet || isNumbered) {
       return (
-        <div key={lineIdx} className="pl-3 relative text-xs sm:text-sm my-0.5">
-          <span className="font-semibold text-emerald-700 mr-1.5">•</span>
+        <div key={lineIdx} className="pl-3 relative text-xs sm:text-sm my-0.5 leading-relaxed">
+          <span className="font-extrabold text-emerald-700 mr-1.5 select-none">•</span>
           {parts}
         </div>
       );
@@ -73,124 +121,74 @@ function renderFormattedContent(text) {
   });
 }
 
-export default function ChatbotMessage({ message }) {
+export default function ChatbotMessage({ message, onPromptSelect }) {
   if (!message) return null;
 
   const isUser = message.role === 'user';
   const hasKosCards = Array.isArray(message.kos) && message.kos.length > 0;
 
-  const typeBadgeStyles = {
-    putra: 'bg-blue-100 text-blue-700 border-blue-200',
-    putri: 'bg-pink-100 text-pink-700 border-pink-200',
-    campur: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  };
-
   return (
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} my-2`}>
-      <div className={`flex items-start gap-2 max-w-[88%] sm:max-w-[82%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+      <div
+        className={`flex items-start gap-2.5 max-w-[92%] sm:max-w-[85%] ${
+          isUser ? 'flex-row-reverse' : 'flex-row'
+        }`}
+      >
         {/* Avatar */}
         <div
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 shadow-2xs ${
-            isUser ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 shadow-2xs select-none ${
+            isUser
+              ? 'bg-emerald-600 text-white'
+              : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
           }`}
         >
           {isUser ? '👤' : '🤖'}
         </div>
 
         {/* Bubble & Cards Container */}
-        <div className="flex flex-col space-y-2 overflow-hidden">
+        <div className="flex flex-col space-y-2 overflow-hidden flex-1">
           {/* Text Bubble */}
           <div
-            className={`px-3.5 py-2.5 rounded-2xl shadow-2xs text-xs sm:text-sm ${
+            className={`px-3.5 py-2.5 rounded-2xl shadow-2xs text-xs sm:text-sm leading-relaxed ${
               isUser
                 ? 'bg-emerald-600 text-white rounded-tr-xs'
-                : 'bg-slate-100 text-slate-800 rounded-tl-xs border border-slate-200/80'
+                : 'bg-white text-slate-800 rounded-tl-xs border border-slate-200/90 shadow-xs'
             }`}
           >
             {renderFormattedContent(message.content)}
 
             {/* Fallback relaxation note */}
             {message.fallback_applied && message.fallback_reason && (
-              <div className="mt-2 pt-2 border-t border-slate-200 text-[11px] text-amber-800 bg-amber-50/80 p-2 rounded-lg">
-                💡 <strong>Penyesuaian:</strong> {message.fallback_reason}
+              <div className="mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-amber-900 bg-amber-50/90 p-2.5 rounded-xl border border-amber-200/60 leading-normal flex items-start gap-1.5">
+                <span className="shrink-0 text-sm">💡</span>
+                <div>
+                  <strong>Penyesuaian Kriteria:</strong> {message.fallback_reason}
+                </div>
               </div>
             )}
           </div>
 
-          {/* Kos Recommendations Carousel / Vertical List (F-22) */}
+          {/* Kos Recommendations Cards Section (F-22) */}
           {hasKosCards && (
             <div className="space-y-2 pt-1">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block px-1">
-                Hunian yang Direkomendasikan:
-              </span>
-              <div className="grid grid-cols-1 gap-2">
-                {message.kos.map((item) => {
-                  const photoSrc = getPhotoUrl(item.thumbnail || item.photos?.[0]?.photo_url);
-                  return (
-                    <div
-                      key={item.id}
-                      className="bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-2xs hover:border-emerald-400 hover:shadow-xs transition flex gap-3 items-center group"
-                    >
-                      {/* Thumbnail */}
-                      <Link
-                        to={`/kos/${item.id}`}
-                        className="w-16 h-16 sm:w-18 sm:h-18 rounded-lg overflow-hidden bg-slate-100 shrink-0 block relative"
-                      >
-                        {photoSrc ? (
-                          <img
-                            src={photoSrc}
-                            alt={item.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-300 text-base">
-                            🏠
-                          </div>
-                        )}
-                        <span
-                          className={`absolute top-1 left-1 text-[9px] font-extrabold uppercase px-1 py-0.2 rounded border ${
-                            typeBadgeStyles[item.type] || 'bg-slate-100 text-slate-700'
-                          }`}
-                        >
-                          {item.type}
-                        </span>
-                      </Link>
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                  <span>🏠</span>
+                  <span>Rekomendasi Kos Resmi ({message.kos.length})</span>
+                </span>
+                <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  Data Terverifikasi
+                </span>
+              </div>
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <Link
-                          to={`/kos/${item.id}`}
-                          className="font-bold text-xs sm:text-sm text-slate-900 truncate block hover:text-emerald-600 transition"
-                        >
-                          {item.name}
-                        </Link>
-                        <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                          {item.address}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-extrabold text-emerald-600">
-                            {formatCurrency(item.min_price)}
-                            <span className="text-[10px] font-normal text-slate-400">/bln</span>
-                          </span>
-                          {item.avg_rating > 0 && (
-                            <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
-                              ★ {item.avg_rating.toFixed(1)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Detail Link Button */}
-                      <Link
-                        to={`/kos/${item.id}`}
-                        className="shrink-0 p-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white text-xs font-bold transition flex items-center gap-1"
-                      >
-                        <span className="hidden sm:inline">Detail</span>
-                        <span>→</span>
-                      </Link>
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col gap-2.5">
+                {message.kos.map((kos) => (
+                  <ChatbotKosCard
+                    key={kos.id}
+                    kos={kos}
+                    onAskAbout={onPromptSelect}
+                  />
+                ))}
               </div>
             </div>
           )}
@@ -198,7 +196,7 @@ export default function ChatbotMessage({ message }) {
           {/* Timestamp */}
           {message.timestamp && (
             <span
-              className={`text-[10px] text-slate-400 px-1 ${
+              className={`text-[10px] text-slate-400 px-1 select-none ${
                 isUser ? 'text-right' : 'text-left'
               }`}
             >
