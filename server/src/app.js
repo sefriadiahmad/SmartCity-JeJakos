@@ -46,8 +46,8 @@ app.use('/api/chatbot', require('./routes/chatbot'));
 // app.use('/api/complaints', require('./routes/complaint'));
 app.use('/api/admin', require('./routes/admin'));
 
-// Socket.IO handlers (akan ditambahkan di T-51)
-// require('./socket/socketHandler')(io);
+// Socket.IO handlers (F-25, F-26)
+require('./socket/socketHandler')(io);
 
 // Error handler (harus terakhir)
 app.use(errorHandler);
