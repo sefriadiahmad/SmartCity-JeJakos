@@ -3,6 +3,7 @@ const UserModel = require('../models/user.model');
 const KosModel = require('../models/kos.model');
 const RoomModel = require('../models/room.model');
 const ReviewModel = require('../models/review.model');
+const ChatbotModel = require('../models/chatbot.model');
 
 const AdminController = {
   // GET /api/admin/dashboard — statistik platform (design.md §3 line 332)
@@ -310,6 +311,26 @@ const AdminController = {
 
       await ReviewModel.delete(id);
       res.json({ message: 'Ulasan berhasil dihapus' });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  // GET /api/admin/chatbot-logs — pantau log chatbot (data pribadi disamarkan, F-23)
+  async listChatbotLogs(req, res, next) {
+    try {
+      const { page, limit, user_id, search, q, start_date, end_date } = req.query;
+
+      const result = await ChatbotModel.findAllLogs({
+        page,
+        limit,
+        user_id: user_id ? parseInt(user_id, 10) : null,
+        search: search || q || null,
+        start_date: start_date || null,
+        end_date: end_date || null,
+      });
+
+      res.json(result);
     } catch (err) {
       next(err);
     }

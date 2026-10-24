@@ -28,4 +28,7 @@ router.get('/reviews', adminController.listReviews);
 router.put('/reviews/:id/moderate', adminController.moderateReview);
 router.delete('/reviews/:id', adminController.deleteReview);
 
+// F-23: Pemantauan Log Chatbot (Data Pribadi Disamarkan)
+router.get('/chatbot-logs', adminController.listChatbotLogs);
+
 module.exports = router;

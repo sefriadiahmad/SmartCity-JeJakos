@@ -41,7 +41,7 @@ app.use('/api/kos', require('./routes/kos'));
 // app.use('/api/bookings', require('./routes/booking'));
 // app.use('/api/invoices', require('./routes/invoice'));
 // app.use('/api/conversations', require('./routes/chat'));
-// app.use('/api/chatbot', require('./routes/chatbot'));
+app.use('/api/chatbot', require('./routes/chatbot'));
 // app.use('/api/reviews', require('./routes/review'));
 // app.use('/api/complaints', require('./routes/complaint'));
 app.use('/api/admin', require('./routes/admin'));
