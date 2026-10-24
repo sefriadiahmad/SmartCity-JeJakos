@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import api from '../../services/api';
+import { connectSocket, socket } from '../../services/socket';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [toast, setToast] = useState(null);
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -22,6 +26,42 @@ export default function Navbar() {
       ? user.photo_url
       : `${serverBase}${user.photo_url}`
     : null;
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      return undefined;
+    }
+
+    let toastTimer;
+    const loadUnread = async () => {
+      try {
+        const res = await api.get('/conversations/unread-count');
+        setUnreadCount(res.data?.unread_count || 0);
+      } catch {
+        setUnreadCount(0);
+      }
+    };
+    const handleNewMessage = (payload) => {
+      const message = payload?.message || payload;
+      if (!message || message.sender_id === user.id) return;
+      setUnreadCount((count) => count + 1);
+      setToast({
+        conversationId: payload?.conversationId || message.conversation_id,
+        senderName: message.sender?.name || 'Pesan baru',
+        content: message.content,
+      });
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => setToast(null), 5000);
+    };
+
+    connectSocket();
+    loadUnread();
+    socket.on('newMessage', handleNewMessage);
+    return () => {
+      clearTimeout(toastTimer);
+      socket.off('newMessage', handleNewMessage);
+    };
+  }, [isAuthenticated, user]);
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
@@ -61,8 +101,13 @@ export default function Navbar() {
               </Link>
             )}
             {isAuthenticated && (
-              <Link to="/conversations" className="hover:text-emerald-600 transition flex items-center gap-1">
+              <Link to="/conversations" className="hover:text-emerald-600 transition flex items-center gap-1.5">
                 <span>Pesan</span>
+                {unreadCount > 0 && (
+                  <span className="min-w-4 h-4 px-1 rounded-full bg-rose-600 text-white text-[10px] leading-4 text-center font-extrabold animate-pulse">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </Link>
             )}
           </nav>
@@ -193,6 +238,11 @@ export default function Navbar() {
               >
                 <span>💬</span>
                 <span>Pesan</span>
+                {unreadCount > 0 && (
+                  <span className="min-w-5 h-5 px-1 rounded-full bg-rose-600 text-white text-[10px] leading-5 text-center font-extrabold">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </Link>
             )}
 
@@ -262,6 +312,24 @@ export default function Navbar() {
           </div>
         )}
       </div>
+      {toast && (
+        <Link
+          to={`/conversations?id=${toast.conversationId}`}
+          onClick={() => {
+            setToast(null);
+            setUnreadCount((count) => Math.max(0, count - 1));
+          }}
+          className="fixed z-60 top-20 right-4 w-[calc(100%-2rem)] sm:w-90 bg-white border border-emerald-200 rounded-2xl shadow-xl p-3.5 flex gap-3 hover:border-emerald-500 transition"
+          role="status"
+        >
+          <span className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">💬</span>
+          <span className="min-w-0 flex-1">
+            <strong className="block text-xs text-slate-900 truncate">Pesan baru dari {toast.senderName}</strong>
+            <span className="block text-xs text-slate-500 truncate mt-0.5">{toast.content}</span>
+          </span>
+          <span className="text-emerald-600 font-bold text-sm">→</span>
+        </Link>
+      )}
     </header>
   );
 }

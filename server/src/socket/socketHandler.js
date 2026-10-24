@@ -34,6 +34,7 @@ function initializeSocketHandler(io) {
   // Socket connection handler
   io.on('connection', (socket) => {
     console.log(`[Socket] User ${socket.userId} connected: ${socket.id}`);
+    socket.join(`user_${socket.userId}`);
 
     /**
      * Event: joinConversation
@@ -100,6 +101,17 @@ function initializeSocketHandler(io) {
         // Broadcast to all users in the conversation room
         const roomName = `conv_${conversationId}`;
         io.to(roomName).emit('newMessage', {
+          message,
+          conversationId,
+          timestamp: new Date(),
+        });
+
+        // Recipient must receive notification even when not viewing this conversation.
+        const conversation = await ConversationModel.findById(conversationId);
+        const recipientId = conversation.user1_id === socket.userId
+          ? conversation.user2_id
+          : conversation.user1_id;
+        io.to(`user_${recipientId}`).emit('newMessage', {
           message,
           conversationId,
           timestamp: new Date(),
