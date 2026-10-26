@@ -91,9 +91,14 @@ export default function Navbar() {
               </Link>
             )}
             {isAuthenticated && user?.role === 'pencari' && (
-              <Link to="/dashboard" className="hover:text-emerald-600 transition">
-                Dashboard
-              </Link>
+              <>
+                <Link to="/bookings" className="hover:text-emerald-600 transition">
+                  Pemesanan Saya
+                </Link>
+                <Link to="/dashboard" className="hover:text-emerald-600 transition">
+                  Dashboard
+                </Link>
+              </>
             )}
             {isAuthenticated && user?.role === 'admin' && (
               <Link to="/admin/dashboard" className="hover:text-emerald-600 transition">
@@ -213,13 +218,22 @@ export default function Navbar() {
               </Link>
             )}
             {isAuthenticated && user?.role === 'pencari' && (
-              <Link
-                to="/dashboard"
-                onClick={() => setIsOpen(false)}
-                className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Dashboard
-              </Link>
+              <>
+                <Link
+                  to="/bookings"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Pemesanan Saya
+                </Link>
+                <Link
+                  to="/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Dashboard
+                </Link>
+              </>
             )}
             {isAuthenticated && user?.role === 'admin' && (
               <Link

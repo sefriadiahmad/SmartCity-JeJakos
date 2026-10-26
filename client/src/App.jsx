@@ -11,6 +11,7 @@ import KosDetailPage from './pages/kos/KosDetailPage';
 import PemilikDashboard from './pages/dashboard/PemilikDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ConversationsPage from './pages/chat/ConversationsPage';
+import MyBookingsPage from './pages/booking/MyBookingsPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ChatbotWidget from './components/chatbot/ChatbotWidget';
 import { AuthProvider } from './context/AuthContext';
@@ -42,6 +43,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <ConversationsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bookings"
+                element={
+                  <ProtectedRoute>
+                    <MyBookingsPage />
                   </ProtectedRoute>
                 }
               />
