@@ -5,6 +5,7 @@ import { socket, connectSocket } from '../../services/socket';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
 import InvoiceDetailModal from '../../components/invoice/InvoiceDetailModal';
+import PaymentModal from '../../components/payment/PaymentModal';
 
 const TABS = [
   { id: 'all', label: 'Semua' },
@@ -40,6 +41,7 @@ export default function MyInvoicesPage() {
 
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [payingId, setPayingId] = useState(null);
+  const [activePaymentData, setActivePaymentData] = useState(null);
   const [reminderToast, setReminderToast] = useState(null);
 
   const fetchInvoices = useCallback(async () => {
@@ -137,10 +139,21 @@ export default function MyInvoicesPage() {
     setPayingId(invoice.id);
     try {
       const res = await api.post(`/invoices/${invoice.id}/pay`);
-      const { redirect_url } = res.data;
+      const { redirect_url, token, order_id, amount } = res.data;
+
+      // Automatically open Midtrans QRIS payment gateway
       if (redirect_url) {
         window.open(redirect_url, '_blank', 'noopener,noreferrer');
       }
+
+      // Open payment modal for status checking & QRIS details
+      setActivePaymentData({
+        invoice,
+        redirect_url,
+        token,
+        order_id,
+        amount,
+      });
     } catch (err) {
       alert(err.response?.data?.error || 'Gagal menyiapkan pembayaran');
     } finally {
@@ -445,7 +458,19 @@ export default function MyInvoicesPage() {
         isOpen={Boolean(selectedInvoice)}
         onClose={() => setSelectedInvoice(null)}
         invoice={selectedInvoice}
-        onPaymentInitiated={() => {
+        onPaymentInitiated={(payPayload) => {
+          setSelectedInvoice(null);
+          setActivePaymentData(payPayload);
+          fetchInvoices();
+        }}
+      />
+
+      {/* Payment Gateway Redirect & Status Modal (F-32) */}
+      <PaymentModal
+        isOpen={Boolean(activePaymentData)}
+        onClose={() => setActivePaymentData(null)}
+        paymentData={activePaymentData}
+        onPaymentSuccess={() => {
           fetchInvoices();
         }}
       />
