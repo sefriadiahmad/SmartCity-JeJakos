@@ -128,6 +128,23 @@ const ReviewModel = {
     );
     return result.insertId;
   },
+
+  async findByBookingId(booking_id) {
+    const [rows] = await db.execute('SELECT id FROM reviews WHERE booking_id = ? LIMIT 1', [booking_id]);
+    return rows[0] || null;
+  },
+
+  async getRatingSummary(kos_id) {
+    const [rows] = await db.execute(
+      `SELECT COALESCE(AVG(rating), 0) AS avg_rating, COUNT(*) AS total_reviews
+       FROM reviews WHERE kos_id = ? AND is_moderated = FALSE`,
+      [kos_id]
+    );
+    return {
+      avg_rating: Number(parseFloat(rows[0].avg_rating || 0).toFixed(1)),
+      total_reviews: parseInt(rows[0].total_reviews, 10),
+    };
+  },
 };
 
 module.exports = ReviewModel;
