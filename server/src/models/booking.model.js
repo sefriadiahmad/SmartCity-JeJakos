@@ -257,21 +257,210 @@ const BookingModel = {
   },
 
   /**
-   * Update booking status and optional notes
+   * Update booking status and synchronize room availability atomically (F-30)
    */
-  async updateStatus(id, status, notes = null) {
-    if (notes !== null && notes !== undefined) {
-      const [res] = await db.execute(
-        `UPDATE bookings SET status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-        [status, notes, id]
+  async updateStatus(id, newStatus, notes = null) {
+    const conn = await db.getConnection();
+    try {
+      await conn.beginTransaction();
+
+      // 1. Fetch current booking and room state with row lock
+      const [rows] = await conn.execute(
+        `SELECT b.id, b.room_id, b.tenant_id, b.status, r.is_available, r.kos_id
+         FROM bookings b
+         JOIN rooms r ON b.room_id = r.id
+         WHERE b.id = ?
+         FOR UPDATE`,
+        [id]
       );
-      return res.affectedRows > 0;
+
+      if (!rows || rows.length === 0) {
+        await conn.rollback();
+        return {
+          success: false,
+          error: 'Pemesanan tidak ditemukan',
+          notFound: true,
+          affectedRows: 0,
+        };
+      }
+
+      const currentBooking = rows[0];
+      const prevStatus = currentBooking.status;
+
+      // Terminal state check
+      if (['rejected', 'cancelled', 'completed'].includes(prevStatus)) {
+        await conn.rollback();
+        return {
+          success: false,
+          error: 'Status pemesanan sudah final dan tidak dapat diubah lagi',
+          terminal: true,
+          affectedRows: 0,
+        };
+      }
+
+      // If activating booking: room must be available
+      if (newStatus === 'active') {
+        if (!currentBooking.is_available && prevStatus !== 'active') {
+          await conn.rollback();
+          return {
+            success: false,
+            error: 'Kamar sudah tidak tersedia atau sudah ditempati',
+            affectedRows: 0,
+          };
+        }
+
+        // Room is now occupied
+        await conn.execute(
+          `UPDATE rooms SET is_available = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+          [currentBooking.room_id]
+        );
+      }
+
+      // If active booking ends (completed or cancelled): release room back to available
+      if (prevStatus === 'active' && ['completed', 'cancelled'].includes(newStatus)) {
+        const [otherActive] = await conn.execute(
+          `SELECT COUNT(*) AS total FROM bookings WHERE room_id = ? AND status = 'active' AND id != ?`,
+          [currentBooking.room_id, id]
+        );
+
+        if (otherActive[0].total === 0) {
+          await conn.execute(
+            `UPDATE rooms SET is_available = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            [currentBooking.room_id]
+          );
+        }
+      }
+
+      // Update booking row
+      if (notes !== null && notes !== undefined) {
+        await conn.execute(
+          `UPDATE bookings SET status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+          [newStatus, notes, id]
+        );
+      } else {
+        await conn.execute(
+          `UPDATE bookings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+          [newStatus, id]
+        );
+      }
+
+      await conn.commit();
+      return {
+        success: true,
+        prevStatus,
+        newStatus,
+        affectedRows: 1,
+      };
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
     }
-    const [res] = await db.execute(
-      `UPDATE bookings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [status, id]
-    );
-    return res.affectedRows > 0;
+  },
+
+  /**
+   * Catat penghuni aktif setelah pemesanan diterima & dibayar (F-30)
+   */
+  async recordActiveTenant(bookingId, notes = null) {
+    return await this.updateStatus(bookingId, 'active', notes);
+  },
+
+  /**
+   * Selesaikan masa sewa penghuni aktif (checkout / kamar kembali tersedia)
+   */
+  async completeBooking(bookingId, notes = null) {
+    return await this.updateStatus(bookingId, 'completed', notes);
+  },
+
+  /**
+   * List penghuni aktif (F-30)
+   */
+  async findActiveTenants({
+    owner_id = null,
+    kos_id = null,
+    page = 1,
+    limit = 10,
+    search = null,
+  } = {}) {
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
+    const offset = (pageNum - 1) * limitNum;
+
+    const whereConditions = ["b.status = 'active'"];
+    const params = [];
+
+    if (owner_id) {
+      whereConditions.push('k.owner_id = ?');
+      params.push(parseInt(owner_id, 10));
+    }
+
+    if (kos_id) {
+      whereConditions.push('k.id = ?');
+      params.push(parseInt(kos_id, 10));
+    }
+
+    if (search) {
+      whereConditions.push('(u_tenant.name LIKE ? OR u_tenant.phone LIKE ? OR r.room_number LIKE ? OR k.name LIKE ?)');
+      const s = `%${search}%`;
+      params.push(s, s, s, s);
+    }
+
+    const whereClause = `WHERE ${whereConditions.join(' AND ')}`;
+
+    const countSql = `
+      SELECT COUNT(*) AS total
+      FROM bookings b
+      JOIN rooms r ON b.room_id = r.id
+      JOIN kos k ON r.kos_id = k.id
+      JOIN users u_tenant ON b.tenant_id = u_tenant.id
+      ${whereClause}
+    `;
+    const [countRows] = await db.execute(countSql, params);
+    const total = countRows[0].total;
+
+    if (total === 0) {
+      return {
+        tenants: [],
+        data: [],
+        total: 0,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: 0,
+      };
+    }
+
+    const selectSql = `
+      SELECT 
+        b.id, b.room_id, b.tenant_id, b.status, b.check_in_date, b.check_out_date, b.notes,
+        b.created_at, b.updated_at,
+        r.room_number, r.price AS room_price, r.pay_period, r.description AS room_description, r.is_available AS room_is_available,
+        k.id AS kos_id, k.owner_id AS kos_owner_id, k.name AS kos_name, k.address AS kos_address, k.district AS kos_district, k.type AS kos_type,
+        u_tenant.name AS tenant_name, u_tenant.email AS tenant_email, u_tenant.phone AS tenant_phone, u_tenant.photo_url AS tenant_photo,
+        u_owner.name AS owner_name, u_owner.email AS owner_email, u_owner.phone AS owner_phone, u_owner.photo_url AS owner_photo,
+        (SELECT photo_url FROM kos_photos WHERE room_id = r.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS room_photo,
+        (SELECT photo_url FROM kos_photos WHERE kos_id = k.id AND room_id IS NULL ORDER BY sort_order ASC, id ASC LIMIT 1) AS kos_photo
+      FROM bookings b
+      JOIN rooms r ON b.room_id = r.id
+      JOIN kos k ON r.kos_id = k.id
+      JOIN users u_tenant ON b.tenant_id = u_tenant.id
+      JOIN users u_owner ON k.owner_id = u_owner.id
+      ${whereClause}
+      ORDER BY b.check_in_date DESC, b.id DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    const [rows] = await db.execute(selectSql, [...params, limitNum, offset]);
+    const tenants = rows.map(formatBooking);
+
+    return {
+      tenants,
+      data: tenants,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum),
+    };
   },
 
   /**

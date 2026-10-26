@@ -41,6 +41,7 @@ async function runTests() {
 
   let testBookingId1 = null;
   let testBookingId2 = null;
+  let testBookingId3 = null;
 
   try {
     // 1. Authentication & RBAC
@@ -342,6 +343,106 @@ async function runTests() {
     assert.strictEqual(rejectData.booking.status, 'rejected');
     assert.strictEqual(rejectData.booking.notes, 'Kamar sedang dalam perbaikan');
 
+    // 8. T-61 / F-30: Active tenant recording + room availability sync
+    console.log('8. Testing T-61: Record active tenant & room availability sync (F-30)...');
+    // Create booking for Room 3 (Kos 1, owned by Budi)
+    const createRes3 = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tenantAriToken}`,
+      },
+      body: JSON.stringify({
+        room_id: 3,
+        check_in_date: '2026-11-01',
+        notes: 'Pemesanan kamar B1 untuk aktif',
+      }),
+    });
+    assert.strictEqual(createRes3.status, 201);
+    const createData3 = await createRes3.json();
+    testBookingId3 = createData3.booking.id;
+
+    // 8a. Owner activates booking (or via payment logic)
+    console.log('8a. Testing activation of booking (status=active)...');
+    const activateRes = await fetch(`${baseUrl}/${testBookingId3}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${ownerBudiToken}`,
+      },
+      body: JSON.stringify({ status: 'active', notes: 'Pembayaran lunas, penghuni aktif' }),
+    });
+    assert.strictEqual(activateRes.status, 200);
+    const activateData = await activateRes.json();
+    assert.strictEqual(activateData.booking.status, 'active');
+
+    // 8b. Check room 3 availability is now FALSE
+    console.log('8b. Verifying room 3 is_available is now FALSE...');
+    const room3Res = await fetch(`http://localhost:${port}/api/kos/1/rooms/3`);
+    assert.strictEqual(room3Res.status, 200);
+    const room3Data = await room3Res.json();
+    assert.strictEqual(room3Data.room.is_available, false);
+
+    // 8c. Dina attempts to book room 3 while active -> 400
+    console.log('8c. Verifying new booking for room 3 fails (400 unavailable)...');
+    const bookOccupiedRes = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tenantDinaToken}`,
+      },
+      body: JSON.stringify({
+        room_id: 3,
+        check_in_date: '2026-11-05',
+      }),
+    });
+    assert.strictEqual(bookOccupiedRes.status, 400);
+
+    // 8d. Test GET /api/bookings/tenants (F-30 active tenants list)
+    console.log('8d. Testing GET /api/bookings/tenants with pencari token (403)...');
+    const tenantsPencariRes = await fetch(`${baseUrl}/tenants`, {
+      headers: { Authorization: `Bearer ${tenantDinaToken}` },
+    });
+    assert.strictEqual(tenantsPencariRes.status, 403);
+
+    console.log('8e. Testing GET /api/bookings/tenants with Budi token (200)...');
+    const tenantsBudiRes = await fetch(`${baseUrl}/tenants`, {
+      headers: { Authorization: `Bearer ${ownerBudiToken}` },
+    });
+    assert.strictEqual(tenantsBudiRes.status, 200);
+    const tenantsBudiData = await tenantsBudiRes.json();
+    assert.ok(Array.isArray(tenantsBudiData.tenants));
+    assert.ok(tenantsBudiData.tenants.some((t) => t.id === testBookingId3));
+    assert.ok(tenantsBudiData.tenants.every((t) => t.status === 'active' && t.kos.owner_id === 2));
+
+    console.log('8f. Testing GET /api/bookings/tenants with Siti token (does not show Budi tenant)...');
+    const tenantsSitiRes = await fetch(`${baseUrl}/tenants`, {
+      headers: { Authorization: `Bearer ${ownerSitiToken}` },
+    });
+    assert.strictEqual(tenantsSitiRes.status, 200);
+    const tenantsSitiData = await tenantsSitiRes.json();
+    assert.ok(!tenantsSitiData.tenants.some((t) => t.id === testBookingId3));
+
+    // 8g. Test complete booking -> room availability restored to TRUE
+    console.log('8g. Testing complete booking (status=completed) restores room availability...');
+    const completeRes = await fetch(`${baseUrl}/${testBookingId3}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${ownerBudiToken}`,
+      },
+      body: JSON.stringify({ status: 'completed', notes: 'Masa sewa selesai' }),
+    });
+    assert.strictEqual(completeRes.status, 200);
+    const completeData = await completeRes.json();
+    assert.strictEqual(completeData.booking.status, 'completed');
+
+    // Verify room 3 is now back to available
+    const room3RestoredRes = await fetch(`http://localhost:${port}/api/kos/1/rooms/3`);
+    assert.strictEqual(room3RestoredRes.status, 200);
+    const room3RestoredData = await room3RestoredRes.json();
+    assert.strictEqual(room3RestoredData.room.is_available, true);
+
   } finally {
     // Cleanup
     if (testBookingId1) {
@@ -349,6 +450,11 @@ async function runTests() {
     }
     if (testBookingId2) {
       await BookingModel.delete(testBookingId2);
+    }
+    if (testBookingId3) {
+      await BookingModel.delete(testBookingId3);
+      // Ensure room 3 is available
+      await db.execute('UPDATE rooms SET is_available = 1 WHERE id = 3');
     }
     server.close();
   }

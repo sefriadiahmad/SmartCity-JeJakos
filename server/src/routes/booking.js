@@ -34,6 +34,9 @@ router.post(
 // GET /api/bookings — list pemesanan sesuai peran (F-29)
 router.get('/', bookingController.listBookings);
 
+// GET /api/bookings/tenants — [pemilik, admin] list penghuni aktif (F-30)
+router.get('/tenants', rbac('pemilik', 'admin'), bookingController.getActiveTenants);
+
 // GET /api/bookings/:id — detail pemesanan (F-29)
 router.get('/:id', bookingController.getBookingById);
 

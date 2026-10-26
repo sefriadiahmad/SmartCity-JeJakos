@@ -209,6 +209,15 @@ const RoomModel = {
     return res.affectedRows > 0;
   },
 
+  async updateAvailability(id, isAvailable, conn = null) {
+    const executor = conn || db;
+    const [res] = await executor.execute(
+      `UPDATE rooms SET is_available = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [isAvailable ? 1 : 0, id]
+    );
+    return res.affectedRows > 0;
+  },
+
   async findAll({ page = 1, limit = 10, kos_id = null, is_available = null } = {}) {
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));

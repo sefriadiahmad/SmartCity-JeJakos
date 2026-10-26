@@ -142,7 +142,35 @@ const BookingController = {
   },
 
   /**
-   * PUT /api/bookings/:id/status — [pemilik/admin/pencari] update status pemesanan (F-28)
+   * GET /api/bookings/tenants — [pemilik, admin] list penghuni aktif (F-30)
+   */
+  async getActiveTenants(req, res, next) {
+    try {
+      const { kos_id, page = 1, limit = 10, search } = req.query;
+
+      let owner_id = null;
+      if (req.user.role === 'pemilik') {
+        owner_id = req.user.id;
+      } else if (req.user.role === 'admin') {
+        if (req.query.owner_id) owner_id = parseInt(req.query.owner_id, 10);
+      }
+
+      const result = await BookingModel.findActiveTenants({
+        owner_id,
+        kos_id: kos_id ? parseInt(kos_id, 10) : null,
+        page,
+        limit,
+        search: search || null,
+      });
+
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * PUT /api/bookings/:id/status — [pemilik/admin/pencari] update status pemesanan (F-28, F-30)
    */
   async updateStatus(req, res, next) {
     try {
@@ -191,13 +219,25 @@ const BookingController = {
 
       // Owner authorization rules
       if (isOwner && !isAdmin) {
-        if (booking.status === 'pending' && !['accepted', 'rejected'].includes(status)) {
+        if (booking.status === 'pending' && !['accepted', 'rejected', 'active'].includes(status)) {
           return res.status(400).json({
-            error: 'Pemilik hanya dapat menerima atau menolak pemesanan yang berstatus pending',
+            error: 'Pemilik hanya dapat menerima, menolak, atau mengaktifkan pemesanan yang berstatus pending',
           });
         }
 
-        if (status === 'accepted') {
+        if (booking.status === 'accepted' && !['active', 'cancelled'].includes(status)) {
+          return res.status(400).json({
+            error: 'Pemesanan yang telah diterima hanya dapat diaktifkan atau dibatalkan',
+          });
+        }
+
+        if (booking.status === 'active' && !['completed', 'cancelled'].includes(status)) {
+          return res.status(400).json({
+            error: 'Pemesanan aktif hanya dapat diselesaikan atau dibatalkan',
+          });
+        }
+
+        if (status === 'accepted' || status === 'active') {
           const room = await RoomModel.findById(booking.room_id);
           if (!room || !room.is_available) {
             return res.status(400).json({
@@ -207,11 +247,15 @@ const BookingController = {
         }
       }
 
-      await BookingModel.updateStatus(
+      const updateResult = await BookingModel.updateStatus(
         booking.id,
         status,
         notes !== undefined ? notes : null
       );
+
+      if (!updateResult.success) {
+        return res.status(400).json({ error: updateResult.error });
+      }
 
       const updated = await BookingModel.findById(booking.id);
 
