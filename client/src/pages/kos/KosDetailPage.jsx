@@ -5,6 +5,7 @@ import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
 import KosMap from '../../components/kos/KosMap';
+import BookingModal from '../../components/booking/BookingModal';
 
 // Jambi Campus & City Landmarks for Distance Reference
 const JAMBI_LANDMARKS = [
@@ -539,7 +540,12 @@ export default function KosDetailPage() {
               <div className="space-y-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setBookingModalRoom(kos.rooms?.[0] || { price: minRoomPrice, room_number: 'Kamar Pilihan' })}
+                  onClick={() =>
+                    setBookingModalRoom(
+                      kos.rooms?.find((r) => r.is_available) ||
+                        kos.rooms?.[0] || { price: minRoomPrice, room_number: 'Kamar Pilihan' }
+                    )
+                  }
                   disabled={availableRoomsCount === 0}
                   className={`w-full py-3 text-xs sm:text-sm font-bold rounded-xl transition shadow-sm ${
                     availableRoomsCount > 0
@@ -626,56 +632,19 @@ export default function KosDetailPage() {
         </div>
       )}
 
-      {/* Booking Prompt Modal */}
-      {bookingModalRoom && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-xl border border-slate-100 text-left">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-sm text-slate-900">Pemesanan Kamar</h3>
-              <button
-                type="button"
-                onClick={() => setBookingModalRoom(null)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-100 space-y-1">
-              <p className="text-xs font-bold text-emerald-900">{kos.name}</p>
-              <p className="text-xs text-emerald-800">
-                Unit: {bookingModalRoom.room_number || `Kamar #${bookingModalRoom.id}`}
-              </p>
-              <p className="text-sm font-extrabold text-emerald-700">
-                {formatCurrency(bookingModalRoom.price)} / {bookingModalRoom.pay_period || 'bulan'}
-              </p>
-            </div>
-
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Sistem booking digital otomatis dengan gateway QRIS akan aktif pada Sprint 2. Anda dapat langsung mengonfirmasi ketersediaan kamar kepada pemilik via WhatsApp atau telepon.
-            </p>
-
-            {kos.owner_phone && (
-              <a
-                href={`https://wa.me/${kos.owner_phone.replace(/^0/, '62').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Halo ${kos.owner_name || 'Pemilik Kos'}, saya ingin memesan ${bookingModalRoom.room_number || 'kamar'} di ${kos.name} via JeJakos.`)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="block w-full py-2.5 text-center text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-sm"
-              >
-                Lanjutkan via WhatsApp ({kos.owner_phone})
-              </a>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setBookingModalRoom(null)}
-              className="w-full py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition"
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Booking Form Modal (F-27) */}
+      <BookingModal
+        isOpen={Boolean(bookingModalRoom)}
+        onClose={() => setBookingModalRoom(null)}
+        kos={kos}
+        initialRoom={bookingModalRoom}
+        onBookingSuccess={() => {
+          // Re-fetch kos detail to update room status if needed
+          api.get(`/kos/${id}`).then((res) => {
+            if (res.data?.kos) setKos(res.data.kos);
+          }).catch(() => {});
+        }}
+      />
     </div>
   );
 }
