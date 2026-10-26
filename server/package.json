@@ -8,7 +8,7 @@
     "dev": "nodemon src/app.js",
     "migrate": "node ../database/migrate.js",
     "seed": "node ../database/seed.js",
-    "test": "node tests/auth.test.js && node tests/middleware.test.js && node tests/kos.test.js && node tests/room.test.js && node tests/search.test.js && node tests/admin.test.js && node tests/chatbot.test.js && node tests/chatbot-route.test.js && node tests/chat.test.js && node tests/socket.test.js"
+    "test": "node tests/auth.test.js && node tests/middleware.test.js && node tests/kos.test.js && node tests/room.test.js && node tests/search.test.js && node tests/admin.test.js && node tests/chatbot.test.js && node tests/chatbot-route.test.js && node tests/chat.test.js && node tests/socket.test.js && node tests/booking.test.js"
   },
   "keywords": [],
   "author": "",
