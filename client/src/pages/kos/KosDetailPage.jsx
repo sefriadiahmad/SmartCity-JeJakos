@@ -6,6 +6,8 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
 import KosMap from '../../components/kos/KosMap';
 import BookingModal from '../../components/booking/BookingModal';
+import ReviewForm from '../../components/review/ReviewForm';
+import ReviewList from '../../components/review/ReviewList';
 
 // Jambi Campus & City Landmarks for Distance Reference
 const JAMBI_LANDMARKS = [
@@ -40,6 +42,9 @@ export default function KosDetailPage() {
   const [bookingModalRoom, setBookingModalRoom] = useState(null);
   const [copied, setCopied] = useState(false);
   const [startingChat, setStartingChat] = useState(false);
+  const [reviewBookings, setReviewBookings] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [ratingSummary, setRatingSummary] = useState({ avg_rating: 0, total_reviews: 0 });
 
   const handleChatOwner = async () => {
     if (!user) {
@@ -77,6 +82,8 @@ export default function KosDetailPage() {
         const res = await api.get(`/kos/${id}`);
         if (active) {
           setKos(res.data?.kos || null);
+          setReviews(res.data?.kos?.reviews || []);
+          setRatingSummary({ avg_rating: res.data?.kos?.avg_rating || 0, total_reviews: res.data?.kos?.total_reviews || 0 });
         }
       } catch (err) {
         if (active) {
@@ -92,6 +99,28 @@ export default function KosDetailPage() {
       active = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (user?.role !== 'pencari') return;
+    api.get('/bookings', { params: { status: 'active', limit: 100 } })
+      .then((res) => setReviewBookings((res.data?.bookings || []).filter((booking) => String(booking.kos?.id) === String(id))))
+      .catch(() => setReviewBookings([]));
+  }, [id, user]);
+
+  useEffect(() => {
+    api.get(`/reviews/kos/${id}`, { params: { limit: 50 } })
+      .then((res) => {
+        setReviews(res.data?.reviews || []);
+        setRatingSummary(res.data?.rating_summary || { avg_rating: 0, total_reviews: 0 });
+      })
+      .catch(() => {});
+  }, [id]);
+
+  const handleReviewCreated = (result) => {
+    setReviews((current) => [result.review, ...current]);
+    setRatingSummary(result.rating_summary);
+    setKos((current) => ({ ...current, ...result.rating_summary }));
+  };
 
   const handleShare = () => {
     if (navigator.clipboard) {
@@ -463,64 +492,8 @@ export default function KosDetailPage() {
 
             {/* Reviews Section */}
             <div className="p-6 bg-white rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <span>⭐</span>
-                  <span>Ulasan Penghuni Nyata</span>
-                </h2>
-                {kos.avg_rating > 0 && (
-                  <div className="text-xs font-bold text-slate-700">
-                    Rata-rata: <span className="text-amber-600 font-extrabold text-sm">{kos.avg_rating}</span> / 5.0
-                  </div>
-                )}
-              </div>
-
-              {kos.reviews && kos.reviews.length > 0 ? (
-                <div className="divide-y divide-slate-100">
-                  {kos.reviews.map((rev) => (
-                    <div key={rev.id} className="py-4 space-y-1.5 first:pt-0 last:pb-0">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">
-                            {(rev.user_name || 'U')[0].toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold text-slate-800">
-                              {rev.user_name || 'Penyewa Terverifikasi'}
-                            </p>
-                            <span className="text-[10px] text-slate-400">
-                              {new Date(rev.created_at).toLocaleDateString('id-ID', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                              })}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="text-amber-500 text-xs tracking-wider">
-                          {'★'.repeat(rev.rating)}
-                          {'☆'.repeat(5 - rev.rating)}
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-slate-600 leading-relaxed pl-10">
-                        {rev.content}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-2">
-                  <span className="text-2xl">📝</span>
-                  <p className="text-xs font-semibold text-slate-700">
-                    Belum Ada Ulasan untuk Kos Ini
-                  </p>
-                  <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
-                    Ulasan hanya dapat ditulis oleh penyewa yang telah terverifikasi menempati kos ini demi menjamin transparansi rekam jejak.
-                  </p>
-                </div>
-              )}
+              <ReviewList reviews={reviews} summary={ratingSummary} />
+              {user?.role === 'pencari' && <ReviewForm bookings={reviewBookings} onCreated={handleReviewCreated} />}
             </div>
           </div>
 

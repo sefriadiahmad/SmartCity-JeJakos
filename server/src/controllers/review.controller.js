@@ -11,8 +11,8 @@ const ReviewController = {
       if (booking.tenant_id !== req.user.id) {
         return res.status(403).json({ error: 'Akses ditolak. Anda bukan penghuni dari pemesanan ini' });
       }
-      if (booking.status !== 'completed') {
-        return res.status(400).json({ error: 'Ulasan hanya dapat dibuat setelah masa hunian selesai' });
+      if (!['active', 'completed'].includes(booking.status)) {
+        return res.status(400).json({ error: 'Ulasan hanya dapat dibuat untuk hunian aktif atau selesai' });
       }
       if (await ReviewModel.findByBookingId(bookingId)) {
         return res.status(400).json({ error: 'Ulasan untuk pemesanan ini sudah dibuat' });
