@@ -251,14 +251,14 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
               : 'bg-red-50 text-red-800 border-red-200'
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <span>{actionFeedback.type === 'success' ? '✓' : '⚠️'}</span>
-            <span className="font-semibold">{actionFeedback.text}</span>
+            <span className="font-semibold break-words">{actionFeedback.text}</span>
           </div>
           <button
             type="button"
             onClick={() => setActionFeedback(null)}
-            className="text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
+            className="shrink-0 text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
           >
             ✕
           </button>
@@ -296,12 +296,12 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
         </div>
 
         {/* Filter by Kos & Search Bar */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
           {kosList.length > 1 && (
             <select
               value={selectedKosFilter}
               onChange={(e) => setSelectedKosFilter(e.target.value)}
-              className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-700"
+              className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-700 sm:w-auto"
             >
               <option value="">Semua Kos Anda</option>
               {kosList.map((k) => (

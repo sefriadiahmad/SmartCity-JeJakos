@@ -356,16 +356,16 @@ export default function PesananMasukTab({ onStatsUpdated }) {
               : 'bg-slate-50 text-slate-800 border-slate-200'
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <span>
               {actionFeedback.type === 'success' ? '✓' : actionFeedback.type === 'error' ? '⚠️' : 'ℹ️'}
             </span>
-            <span className="font-semibold">{actionFeedback.text}</span>
+            <span className="font-semibold break-words">{actionFeedback.text}</span>
           </div>
           <button
             type="button"
             onClick={() => setActionFeedback(null)}
-            className="text-slate-400 hover:text-slate-600 font-bold"
+            className="shrink-0 text-slate-400 hover:text-slate-600 font-bold"
           >
             ✕
           </button>
@@ -674,8 +674,8 @@ export default function PesananMasukTab({ onStatsUpdated }) {
 
       {/* Reject Reason Modal (F-28) */}
       {rejectingBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-100 text-left">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 bg-slate-950/70 backdrop-blur-xs">
+          <div className="my-auto max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-3xl border border-slate-100 bg-white p-6 space-y-4 text-left shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-sm text-slate-900">
                 Tolak Pemesanan #{rejectingBooking.id}

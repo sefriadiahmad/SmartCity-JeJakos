@@ -81,9 +81,9 @@ export default function ManualPaymentModal({
             <span>Penyewa:</span>
             <span className="font-bold">{invoice.tenant?.name || 'Penyewa'}</span>
           </div>
-          <div className="flex justify-between text-emerald-900">
-            <span>Kamar:</span>
-            <span className="font-bold">
+          <div className="flex justify-between gap-3 text-emerald-900">
+            <span className="shrink-0">Kamar:</span>
+            <span className="min-w-0 text-right break-words font-bold">
               {invoice.room?.room_number || `Kamar #${invoice.room?.id}`} ({invoice.kos?.name})
             </span>
           </div>

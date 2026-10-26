@@ -182,7 +182,7 @@ export default function PemilikDashboard() {
         </div>
 
         {/* Navigation Tabs (Kelola Kos vs Pesanan Masuk) */}
-        <div className="flex items-center gap-2 border-b border-slate-200">
+        <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 scrollbar-none">
           <button
             type="button"
             onClick={() => {

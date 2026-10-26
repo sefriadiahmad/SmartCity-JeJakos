@@ -80,10 +80,10 @@ export default function InvoiceDetailModal({
       <div className="bg-white rounded-3xl w-full max-w-lg p-6 sm:p-7 shadow-2xl border border-slate-100 text-left my-auto space-y-5 max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <span className="text-xl">{statusInfo.icon}</span>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-bold text-base text-slate-900">
                   Tagihan #{invoice.id}
                 </h3>
@@ -106,7 +106,7 @@ export default function InvoiceDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+            className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
             ✕
           </button>
@@ -114,17 +114,17 @@ export default function InvoiceDetailModal({
 
         {/* Amount & Status Banner */}
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
-          <div className="flex justify-between items-baseline">
+          <div className="flex justify-between gap-3 items-baseline">
             <span className="text-xs text-slate-500 font-medium">Jumlah Tagihan</span>
-            <span className="text-xl sm:text-2xl font-extrabold text-emerald-700">
+            <span className="shrink-0 text-right text-xl sm:text-2xl font-extrabold text-emerald-700">
               {formatCurrency(invoice.amount)}
             </span>
           </div>
 
-          <div className="pt-2 border-t border-slate-200/60 flex justify-between items-center text-xs">
+          <div className="pt-2 border-t border-slate-200/60 flex justify-between gap-3 items-center text-xs">
             <span className="text-slate-500">Batas Waktu (Jatuh Tempo)</span>
             <span
-              className={`font-bold ${
+              className={`shrink-0 text-right font-bold ${
                 invoice.status === 'overdue' ? 'text-rose-600' : 'text-slate-800'
               }`}
             >
@@ -133,9 +133,9 @@ export default function InvoiceDetailModal({
           </div>
 
           {invoice.paid_at && (
-            <div className="flex justify-between items-center text-xs">
+            <div className="flex justify-between gap-3 items-center text-xs">
               <span className="text-slate-500">Waktu Pembayaran</span>
-              <span className="font-semibold text-emerald-700">
+              <span className="shrink-0 text-right font-semibold text-emerald-700">
                 {new Date(invoice.paid_at).toLocaleString('id-ID', {
                   day: 'numeric',
                   month: 'short',
@@ -148,9 +148,9 @@ export default function InvoiceDetailModal({
           )}
 
           {invoice.payment_method && (
-            <div className="flex justify-between items-center text-xs">
+            <div className="flex justify-between gap-3 items-center text-xs">
               <span className="text-slate-500">Metode Bayar</span>
-              <span className="font-bold uppercase text-slate-800">
+              <span className="min-w-0 text-right font-bold uppercase text-slate-800">
                 {invoice.payment_method === 'manual'
                   ? 'Catatan Manual Pemilik'
                   : invoice.payment_method}
@@ -159,9 +159,9 @@ export default function InvoiceDetailModal({
           )}
 
           {invoice.payment_ref && (
-            <div className="flex justify-between items-center text-xs">
+            <div className="flex justify-between gap-3 items-center text-xs">
               <span className="text-slate-500">Referensi / No. Trx</span>
-              <span className="font-mono text-[11px] text-slate-700 truncate max-w-[200px]">
+              <span className="min-w-0 font-mono text-[11px] text-slate-700 truncate max-w-[200px]">
                 {invoice.payment_ref}
               </span>
             </div>

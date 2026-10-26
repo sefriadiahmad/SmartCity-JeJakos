@@ -115,10 +115,10 @@ export default function BookingDetailModal({
       <div className="bg-white rounded-3xl w-full max-w-lg p-6 sm:p-7 shadow-2xl border border-slate-100 text-left my-auto space-y-5 max-h-[92vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <span className="text-xl">{statusInfo.icon}</span>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-bold text-base text-slate-900">
                   Detail Pemesanan #{booking.id}
                 </h3>
@@ -141,7 +141,7 @@ export default function BookingDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+            className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
             ✕
           </button>

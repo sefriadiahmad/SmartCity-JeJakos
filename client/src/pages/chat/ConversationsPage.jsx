@@ -142,7 +142,7 @@ export default function ConversationsPage() {
       </div>
 
       {/* Main Chat Panel Container */}
-      <div className="flex-1 bg-white rounded-2xl border border-slate-200/90 shadow-sm flex overflow-hidden min-h-[550px] max-h-[750px]">
+      <div className="flex-1 bg-white rounded-2xl border border-slate-200/90 shadow-sm flex overflow-hidden h-[calc(100dvh-10rem)] min-h-[400px] md:h-auto md:min-h-[550px] max-h-[750px]">
         {/* Left Column: Conversations Sidebar */}
         <div
           className={`w-full md:w-80 lg:w-96 border-r border-slate-200 flex flex-col shrink-0 ${
