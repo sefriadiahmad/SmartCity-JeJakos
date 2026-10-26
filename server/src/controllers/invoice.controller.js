@@ -1,6 +1,7 @@
 const InvoiceModel = require('../models/invoice.model');
 const BookingModel = require('../models/booking.model');
 const MidtransService = require('../services/midtrans.service');
+const ReminderService = require('../services/reminder.service');
 
 const InvoiceController = {
   /**
@@ -201,6 +202,69 @@ const InvoiceController = {
         message: 'Pemrosesan tagihan berulang selesai',
         count: result.count,
         generated: result.generated,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /api/invoices/:id/remind — [pemilik, admin] kirim pengingat tagihan manual ke penyewa (F-35)
+   */
+  async sendSingleReminder(req, res, next) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'ID tagihan tidak valid' });
+      }
+
+      const invoice = await InvoiceModel.findById(id);
+      if (!invoice) {
+        return res.status(404).json({ error: 'Tagihan tidak ditemukan' });
+      }
+
+      const isAdmin = req.user.role === 'admin';
+      const isOwner = req.user.id === invoice.owner.id;
+
+      if (!isAdmin && !isOwner) {
+        return res.status(403).json({
+          error: 'Akses ditolak. Anda bukan pemilik kos dari tagihan ini',
+        });
+      }
+
+      if (invoice.status === 'paid') {
+        return res.status(400).json({
+          error: 'Tagihan ini sudah lunas, tidak memerlukan pengingat',
+        });
+      }
+
+      const { note } = req.body || {};
+      const io = req.app.get('io') || null;
+
+      const result = await ReminderService.sendReminderForInvoice(invoice, io, {
+        isManual: true,
+        customNote: note ? note.trim() : null,
+      });
+
+      res.json({
+        message: 'Pengingat tagihan berhasil dikirimkan',
+        reminder: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /api/invoices/reminders/process — [admin] proses seluruh pengingat tagihan (F-35)
+   */
+  async triggerReminders(req, res, next) {
+    try {
+      const io = req.app.get('io') || null;
+      const result = await ReminderService.processAllReminders(io);
+      res.json({
+        message: 'Pemrosesan pengingat tagihan selesai',
+        ...result,
       });
     } catch (err) {
       next(err);

@@ -18,6 +18,7 @@ const io = new Server(server, {
     methods: ['GET', 'POST'],
   },
 });
+app.set('io', io);
 
 // Middleware
 app.use(cors({
@@ -57,7 +58,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 if (require.main === module) {
   const { startCronJobs } = require('./services/cron.service');
-  startCronJobs();
+  startCronJobs(io);
 
   server.listen(PORT, () => {
     console.log(`Server berjalan di http://localhost:${PORT}`);
