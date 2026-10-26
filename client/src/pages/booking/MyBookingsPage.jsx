@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
@@ -47,7 +48,14 @@ const STATUS_BADGES = {
 };
 
 export default function MyBookingsPage() {
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === 'pemilik') {
+      navigate('/dashboard?tab=bookings', { replace: true });
+    }
+  }, [user, navigate]);
 
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
