@@ -13,6 +13,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import ConversationsPage from './pages/chat/ConversationsPage';
 import MyBookingsPage from './pages/booking/MyBookingsPage';
 import MyInvoicesPage from './pages/invoice/MyInvoicesPage';
+import ComplaintsPage from './pages/complaint/ComplaintsPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ChatbotWidget from './components/chatbot/ChatbotWidget';
 import { AuthProvider } from './context/AuthContext';
@@ -63,6 +64,7 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/complaints" element={<ProtectedRoute><ComplaintsPage /></ProtectedRoute>} />
               <Route
                 path="/dashboard"
                 element={

@@ -96,6 +96,9 @@ export default function Navbar() {
                 <Link to="/dashboard?tab=invoices" className="hover:text-emerald-600 transition">
                   Tagihan
                 </Link>
+                <Link to="/complaints" className="hover:text-emerald-600 transition">
+                  Pengaduan
+                </Link>
               </>
             )}
             {isAuthenticated && user?.role === 'pencari' && (
@@ -105,6 +108,9 @@ export default function Navbar() {
                 </Link>
                 <Link to="/invoices" className="hover:text-emerald-600 transition">
                   Tagihan Saya
+                </Link>
+                <Link to="/complaints" className="hover:text-emerald-600 transition">
+                  Pengaduan
                 </Link>
                 <Link to="/dashboard" className="hover:text-emerald-600 transition">
                   Dashboard
@@ -242,6 +248,13 @@ export default function Navbar() {
                 >
                   Tagihan Penghuni
                 </Link>
+                <Link
+                  to="/complaints"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Pengaduan
+                </Link>
               </>
             )}
             {isAuthenticated && user?.role === 'pencari' && (
@@ -259,6 +272,13 @@ export default function Navbar() {
                   className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Tagihan Saya
+                </Link>
+                <Link
+                  to="/complaints"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Pengaduan
                 </Link>
                 <Link
                   to="/dashboard"
