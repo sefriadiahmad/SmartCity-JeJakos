@@ -95,6 +95,9 @@ export default function Navbar() {
                 <Link to="/bookings" className="hover:text-emerald-600 transition">
                   Pemesanan Saya
                 </Link>
+                <Link to="/invoices" className="hover:text-emerald-600 transition">
+                  Tagihan Saya
+                </Link>
                 <Link to="/dashboard" className="hover:text-emerald-600 transition">
                   Dashboard
                 </Link>
@@ -225,6 +228,13 @@ export default function Navbar() {
                   className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Pemesanan Saya
+                </Link>
+                <Link
+                  to="/invoices"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Tagihan Saya
                 </Link>
                 <Link
                   to="/dashboard"

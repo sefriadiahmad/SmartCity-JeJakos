@@ -12,6 +12,7 @@ import PemilikDashboard from './pages/dashboard/PemilikDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ConversationsPage from './pages/chat/ConversationsPage';
 import MyBookingsPage from './pages/booking/MyBookingsPage';
+import MyInvoicesPage from './pages/invoice/MyInvoicesPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ChatbotWidget from './components/chatbot/ChatbotWidget';
 import { AuthProvider } from './context/AuthContext';
@@ -51,6 +52,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <MyBookingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/invoices"
+                element={
+                  <ProtectedRoute>
+                    <MyInvoicesPage />
                   </ProtectedRoute>
                 }
               />
