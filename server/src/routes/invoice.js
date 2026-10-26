@@ -17,4 +17,7 @@ router.post('/generate', rbac('admin'), invoiceController.triggerGenerate);
 // GET /api/invoices/:id — detail tagihan
 router.get('/:id', invoiceController.getInvoiceById);
 
+// POST /api/invoices/:id/pay — [pencari, admin] siapkan pembayaran via Midtrans QRIS (F-32)
+router.post('/:id/pay', invoiceController.payInvoice);
+
 module.exports = router;

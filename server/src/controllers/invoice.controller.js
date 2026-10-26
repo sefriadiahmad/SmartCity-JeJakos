@@ -1,4 +1,5 @@
 const InvoiceModel = require('../models/invoice.model');
+const MidtransService = require('../services/midtrans.service');
 
 const InvoiceController = {
   /**
@@ -70,6 +71,49 @@ const InvoiceController = {
       }
 
       res.json({ invoice });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /api/invoices/:id/pay — [pencari] siapkan pembayaran via gateway Midtrans QRIS (F-32)
+   */
+  async payInvoice(req, res, next) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'ID tagihan tidak valid' });
+      }
+
+      const invoice = await InvoiceModel.findById(id);
+      if (!invoice) {
+        return res.status(404).json({ error: 'Tagihan tidak ditemukan' });
+      }
+
+      const isAdmin = req.user.role === 'admin';
+      const isTenant = req.user.id === invoice.tenant.id;
+
+      if (!isAdmin && !isTenant) {
+        return res.status(403).json({
+          error: 'Akses ditolak. Hanya penyewa terkait yang dapat membayar tagihan ini',
+        });
+      }
+
+      if (invoice.status === 'paid') {
+        return res.status(400).json({
+          error: 'Tagihan ini sudah lunas',
+        });
+      }
+
+      const snapData = await MidtransService.createSnapTransaction(invoice);
+
+      res.json({
+        message: 'Transaksi Midtrans berhasil disiapkan',
+        invoice_id: invoice.id,
+        amount: invoice.amount,
+        ...snapData,
+      });
     } catch (err) {
       next(err);
     }
