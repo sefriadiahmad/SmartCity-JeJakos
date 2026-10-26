@@ -307,6 +307,17 @@ async function runTests() {
     const modData = await modRes.json();
     assert.strictEqual(modData.review.is_moderated, true);
 
+    // Invalid flag is rejected before controller execution
+    const invalidModRes = await fetch(`${baseUrl}/reviews/${testReviewId}/moderate`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ is_moderated: 'invalid' }),
+    });
+    assert.strictEqual(invalidModRes.status, 400);
+
     // DELETE /api/admin/reviews/:id
     const delRes = await fetch(`${baseUrl}/reviews/${testReviewId}`, {
       method: 'DELETE',

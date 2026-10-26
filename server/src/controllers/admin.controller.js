@@ -271,20 +271,15 @@ const AdminController = {
   // PUT /api/admin/reviews/:id/moderate — moderasi ulasan (tandai/sembunyikan)
   async moderateReview(req, res, next) {
     try {
-      const { id } = req.params;
-      const { is_moderated, moderate } = req.body || {};
+      const id = parseInt(req.params.id, 10);
+      const { is_moderated } = req.body;
 
       const review = await ReviewModel.findById(id);
       if (!review) {
         return res.status(404).json({ error: 'Ulasan tidak ditemukan' });
       }
 
-      let targetModerated = true;
-      if (is_moderated !== undefined) {
-        targetModerated = is_moderated === true || is_moderated === 'true' || is_moderated === 1 || is_moderated === '1';
-      } else if (moderate !== undefined) {
-        targetModerated = moderate === true || moderate === 'true' || moderate === 1 || moderate === '1';
-      }
+      const targetModerated = is_moderated === true || is_moderated === 'true';
 
       await ReviewModel.setModerated(id, targetModerated);
       const updatedReview = await ReviewModel.findById(id);
@@ -303,7 +298,7 @@ const AdminController = {
   // DELETE /api/admin/reviews/:id — hapus ulasan melanggar
   async deleteReview(req, res, next) {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id, 10);
       const review = await ReviewModel.findById(id);
       if (!review) {
         return res.status(404).json({ error: 'Ulasan tidak ditemukan' });

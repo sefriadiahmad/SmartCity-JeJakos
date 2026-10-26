@@ -1,7 +1,9 @@
 const express = require('express');
+const { body, param } = require('express-validator');
 const adminController = require('../controllers/admin.controller');
 const auth = require('../middleware/auth');
 const rbac = require('../middleware/rbac');
+const validate = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -25,8 +27,16 @@ router.get('/rooms', adminController.listRooms);
 
 // F-18: Moderasi Ulasan
 router.get('/reviews', adminController.listReviews);
-router.put('/reviews/:id/moderate', adminController.moderateReview);
-router.delete('/reviews/:id', adminController.deleteReview);
+router.put(
+  '/reviews/:id/moderate',
+  [
+    param('id').isInt().withMessage('ID ulasan harus berupa angka'),
+    body('is_moderated').isBoolean().withMessage('Status moderasi harus bernilai true atau false'),
+    validate,
+  ],
+  adminController.moderateReview
+);
+router.delete('/reviews/:id', [param('id').isInt().withMessage('ID ulasan harus berupa angka'), validate], adminController.deleteReview);
 
 // F-23: Pemantauan Log Chatbot (Data Pribadi Disamarkan)
 router.get('/chatbot-logs', adminController.listChatbotLogs);
