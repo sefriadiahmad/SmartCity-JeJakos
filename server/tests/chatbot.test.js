@@ -34,6 +34,13 @@ async function runTests() {
     assert.strictEqual(criteria2.location, 'UIN STS Jambi');
     assert.ok(criteria2.facilities.includes('Kamar Mandi Dalam'));
 
+    const criteriaEnglish = await ChatbotService.parseIntent(
+      'Need male boarding near UNJA under 600k with private bathroom'
+    );
+    assert.strictEqual(criteriaEnglish.type, 'putra');
+    assert.strictEqual(criteriaEnglish.max_price, 600000);
+    assert.ok(criteriaEnglish.facilities.includes('Kamar Mandi Dalam'));
+
     // 1c. Multi-turn memory extraction (F-20)
     // Turn 1 said "kos cewek", Turn 2 said "dekat UNBARI ada wifi budget 800rb"
     const history1 = [
@@ -151,6 +158,11 @@ KOS_IDS: [1, 999, 888]`;
     assert.ok(greetingRes.criteria.intent === 'greeting');
     // Chatbot should ask preferences or greet politely
     assert.ok(greetingRes.message.toLowerCase().includes('kos') || greetingRes.message.toLowerCase().includes('jejakos'));
+
+    const faqRes = await ChatbotService.sendMessage({ message: 'Apa itu JeJakos?' });
+    assert.strictEqual(faqRes.criteria.intent, 'faq');
+    assert.deepStrictEqual(faqRes.kos_ids, []);
+    assert.deepStrictEqual(faqRes.kos, []);
     console.log('✓ Greeting & Preference Probing passed');
 
     // ------------------------------------------------------------

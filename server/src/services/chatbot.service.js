@@ -156,11 +156,11 @@ function parseRuleBasedCriteria(message, history = []) {
 
   // 2. Type Detection (putra / putri / campur)
   let type = null;
-  if (/\b(cewek|perempuan|putri|wanita|akhwat)\b/i.test(fullContextText)) {
+  if (/\b(cewek|perempuan|putri|wanita|akhwat|female|women)\b/i.test(fullContextText)) {
     type = 'putri';
-  } else if (/\b(cowok|laki|pria|putra|ikhwan)\b/i.test(fullContextText)) {
+  } else if (/\b(cowok|laki|pria|putra|ikhwan|male|men)\b/i.test(fullContextText)) {
     type = 'putra';
-  } else if (/\b(campur|bebas|pasutri)\b/i.test(fullContextText)) {
+  } else if (/\b(campur|bebas|pasutri|mixed)\b/i.test(fullContextText)) {
     type = 'campur';
   }
 
@@ -702,15 +702,7 @@ ${fallbackNote}${missingSection}`;
       }
     }
 
-    // 5. If still empty but candidates exist and were recommended, attach top candidates
-    if (validatedKos.length === 0 && candidateKos.length > 0) {
-      for (const k of candidateKos.slice(0, 3)) {
-        validatedIds.push(k.id);
-        validatedKos.push(k);
-      }
-    }
-
-    // Format kos cards for frontend (F-22)
+    // Format kos cards for frontend (F-22). Do not attach candidates the LLM did not recommend.
     const formattedCards = validatedKos.map((k) => ({
       id: k.id,
       name: k.name,
@@ -814,8 +806,8 @@ ${fallbackNote}${missingSection}`;
     // Step 1: Parse Intent & Criteria
     const criteria = await this.parseIntent(trimmedMsg, cleanHistory);
 
-    // If purely greeting or general FAQ with no search intent, handle conversationally
-    if (criteria.intent === 'greeting' && !criteria.landmark && !criteria.max_price && !criteria.type) {
+    // Greetings and FAQs do not need a DB search or recommendation cards.
+    if (['greeting', 'faq'].includes(criteria.intent) && !criteria.landmark && !criteria.max_price && !criteria.type) {
       const promptObj = this.buildPrompt({
         message: trimmedMsg,
         history: cleanHistory,
