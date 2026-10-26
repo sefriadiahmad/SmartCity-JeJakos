@@ -11,27 +11,20 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
 
   // Sync / verify session on mount
   useEffect(() => {
     const initAuth = async () => {
-      const savedToken = localStorage.getItem('token');
-      if (savedToken) {
-        try {
-          const res = await api.get('/auth/me');
-          if (res.data?.user) {
-            setUser(res.data.user);
-            localStorage.setItem('user', JSON.stringify(res.data.user));
-          }
-        } catch {
-          // Token expired or invalid
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setToken(null);
-          setUser(null);
+      try {
+        const res = await api.get('/auth/me');
+        if (res.data?.user) {
+          setUser(res.data.user);
+          localStorage.setItem('user', JSON.stringify(res.data.user));
         }
+      } catch {
+        localStorage.removeItem('user');
+        setUser(null);
       }
       setLoading(false);
     };
@@ -41,12 +34,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    const { accessToken, user: userData } = res.data;
-
-    if (accessToken) {
-      localStorage.setItem('token', accessToken);
-      setToken(accessToken);
-    }
+    const { user: userData } = res.data;
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
@@ -65,9 +53,7 @@ export function AuthProvider({ children }) {
     } catch {
       // Ignore network errors on logout
     } finally {
-      localStorage.removeItem('token');
       localStorage.removeItem('user');
-      setToken(null);
       setUser(null);
     }
   };
@@ -99,9 +85,8 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
-    token,
     loading,
-    isAuthenticated: Boolean(token && user),
+    isAuthenticated: Boolean(user),
     login,
     register,
     logout,

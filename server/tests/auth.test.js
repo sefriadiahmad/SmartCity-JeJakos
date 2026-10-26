@@ -1,5 +1,6 @@
 const assert = require('assert');
 const http = require('http');
+const jwt = require('jsonwebtoken');
 const { app } = require('../src/app');
 const db = require('../src/config/db');
 
@@ -39,9 +40,13 @@ async function runTests() {
     assert.strictEqual(regData.user.email, testEmail);
     assert.strictEqual(regData.user.role, 'pencari');
     assert.strictEqual(regData.user.is_verified, false);
-    assert.ok(regData.verificationToken);
-    verificationToken = regData.verificationToken;
     createdUserId = regData.user.id;
+    assert.ok(!regData.verificationToken);
+    verificationToken = jwt.sign(
+      { id: createdUserId, email: testEmail, type: 'verify_email' },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
     // 1b. Register duplicate email
     console.log('1b. Testing duplicate email register...');
@@ -78,11 +83,12 @@ async function runTests() {
     });
     const loginData = await loginRes.json();
     assert.strictEqual(loginRes.status, 200, `Login failed: ${JSON.stringify(loginData)}`);
-    assert.ok(loginData.accessToken);
-    assert.ok(loginData.refreshToken);
+    assert.ok(!loginData.accessToken);
+    assert.ok(!loginData.refreshToken);
+    assert.ok(loginRes.headers.get('set-cookie')?.includes('accessToken='));
+    accessToken = jwt.sign({ id: createdUserId, email: testEmail, role: 'pencari' }, process.env.JWT_SECRET);
+    refreshToken = jwt.sign({ id: createdUserId }, process.env.JWT_REFRESH_SECRET);
     assert.strictEqual(loginData.user.is_verified, true);
-    accessToken = loginData.accessToken;
-    refreshToken = loginData.refreshToken;
 
     // 3b. Login wrong password
     console.log('3b. Testing login wrong password...');
@@ -138,7 +144,8 @@ async function runTests() {
     });
     const refreshData = await refreshRes.json();
     assert.strictEqual(refreshRes.status, 200, `Refresh failed: ${JSON.stringify(refreshData)}`);
-    assert.ok(refreshData.accessToken);
+    assert.ok(!refreshData.accessToken);
+    assert.ok(refreshRes.headers.get('set-cookie')?.includes('accessToken='));
 
     // 7. Forgot Password
     console.log('7. Testing forgot password...');
@@ -149,8 +156,12 @@ async function runTests() {
     });
     const forgotData = await forgotRes.json();
     assert.strictEqual(forgotRes.status, 200, `Forgot password failed: ${JSON.stringify(forgotData)}`);
-    assert.ok(forgotData.resetToken);
-    resetToken = forgotData.resetToken;
+    assert.ok(!forgotData.resetToken);
+    resetToken = jwt.sign(
+      { id: createdUserId, email: testEmail, type: 'reset_password' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
     // 8. Reset Password
     console.log('8. Testing reset password...');

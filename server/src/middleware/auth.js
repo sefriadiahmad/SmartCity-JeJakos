@@ -1,12 +1,24 @@
 const jwt = require('jsonwebtoken');
 
-const auth = (req, res, next) => {
+const getToken = (req) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.split(' ')[1];
+  }
+
+  const cookie = req.headers.cookie
+    ?.split(';')
+    .map((value) => value.trim())
+    .find((value) => value.startsWith('accessToken='));
+  return cookie?.substring('accessToken='.length);
+};
+
+const auth = (req, res, next) => {
+  const token = getToken(req);
+  if (!token) {
     return res.status(401).json({ error: 'Akses ditolak. Token tidak disediakan' });
   }
 
-  const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
@@ -17,12 +29,11 @@ const auth = (req, res, next) => {
 };
 
 auth.optional = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const token = getToken(req);
+  if (!token) {
     return next();
   }
 
-  const token = authHeader.split(' ')[1];
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET);
   } catch {

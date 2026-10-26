@@ -71,18 +71,10 @@ export default function ProfilePage() {
 
     try {
       const res = await api.post('/auth/forgot-password', { email: user.email });
-      if (res.data?.resetToken) {
-        setResetToken(res.data.resetToken);
-        setResetMsg({
-          type: 'success',
-          text: 'Token reset telah digenerate (lihat kolom token di bawah).',
-        });
-      } else {
-        setResetMsg({
-          type: 'success',
-          text: res.data?.message || 'Instruksi reset telah dikirim.',
-        });
-      }
+      setResetMsg({
+        type: 'success',
+        text: res.data?.message || 'Instruksi reset telah dikirim.',
+      });
     } catch (err) {
       setResetMsg({
         type: 'error',

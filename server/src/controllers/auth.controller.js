@@ -2,6 +2,20 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const UserModel = require('../models/user.model');
 
+const authCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  maxAge: 15 * 60 * 1000,
+};
+
+const refreshCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 const authController = {
   async register(req, res, next) {
     try {
@@ -29,9 +43,8 @@ const authController = {
         { expiresIn: '24h' }
       );
 
-      // ponytail: token returned in response until SMTP mailer active
       res.status(201).json({
-        message: 'Registrasi berhasil. Silakan verifikasi email Anda.',
+        message: 'Registrasi berhasil. Periksa email untuk tautan verifikasi.',
         user: {
           id: userId,
           email: email.toLowerCase().trim(),
@@ -41,7 +54,6 @@ const authController = {
           is_verified: false,
           is_approved: false,
         },
-        verificationToken,
       });
     } catch (err) {
       next(err);
@@ -74,17 +86,11 @@ const authController = {
         { expiresIn: '7d' }
       );
 
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie('accessToken', accessToken, authCookieOptions);
+      res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
       res.json({
         message: 'Login berhasil',
-        accessToken,
-        refreshToken,
         user: {
           id: user.id,
           email: user.email,
@@ -139,10 +145,8 @@ const authController = {
         );
       }
 
-      // ponytail: resetToken returned in response until SMTP mailer active
       res.json({
         message: 'Jika email terdaftar, instruksi reset password telah dikirim',
-        ...(resetToken && { resetToken }),
       });
     } catch (err) {
       next(err);
@@ -216,17 +220,10 @@ const authController = {
         { expiresIn: '7d' }
       );
 
-      res.cookie('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie('accessToken', newAccessToken, authCookieOptions);
+      res.cookie('refreshToken', newRefreshToken, refreshCookieOptions);
 
-      res.json({
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      });
+      res.json({ message: 'Sesi berhasil diperbarui' });
     } catch (err) {
       next(err);
     }
@@ -266,6 +263,7 @@ const authController = {
   },
 
   async logout(req, res) {
+    res.clearCookie('accessToken', authCookieOptions);
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

@@ -1,5 +1,5 @@
 const express = require('express');
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
 const kosController = require('../controllers/kos.controller');
 const auth = require('../middleware/auth');
 const rbac = require('../middleware/rbac');
@@ -7,6 +7,7 @@ const validate = require('../middleware/validate');
 const upload = require('../config/multer');
 
 const router = express.Router();
+const kosId = [param('id').isInt({ min: 1 }).withMessage('ID kos harus berupa angka positif'), validate];
 
 // GET /api/kos/facilities — list master data fasilitas
 router.get('/facilities', kosController.getFacilities);
@@ -18,7 +19,7 @@ router.get('/nearby', auth.optional, kosController.nearbyKos);
 router.get('/', auth.optional, kosController.listKos);
 
 // GET /api/kos/:id — detail kos
-router.get('/:id', auth.optional, kosController.getKosById);
+router.get('/:id', kosId, auth.optional, kosController.getKosById);
 
 // POST /api/kos — [pemilik, admin] tambah kos
 router.post(
@@ -42,6 +43,7 @@ router.post(
 // PUT /api/kos/:id — [pemilik, admin] edit kos
 router.put(
   '/:id',
+  kosId,
   auth,
   rbac('pemilik', 'admin'),
   rbac.requireApproved,
@@ -60,11 +62,12 @@ router.put(
 );
 
 // DELETE /api/kos/:id — [pemilik, admin] hapus kos
-router.delete('/:id', auth, rbac('pemilik', 'admin'), rbac.requireApproved, kosController.deleteKos);
+router.delete('/:id', kosId, auth, rbac('pemilik', 'admin'), rbac.requireApproved, kosController.deleteKos);
 
 // POST /api/kos/:id/photos — [pemilik, admin] upload foto
 router.post(
   '/:id/photos',
+  kosId,
   auth,
   rbac('pemilik', 'admin'),
   rbac.requireApproved,
@@ -75,6 +78,9 @@ router.post(
 // DELETE /api/kos/:id/photos/:photoId — [pemilik, admin] hapus foto
 router.delete(
   '/:id/photos/:photoId',
+  kosId,
+  param('photoId').isInt({ min: 1 }).withMessage('ID foto harus berupa angka positif'),
+  validate,
   auth,
   rbac('pemilik', 'admin'),
   rbac.requireApproved,

@@ -60,7 +60,6 @@ export default function RegisterPage() {
 
       setSuccessInfo({
         message: data.message || 'Registrasi berhasil.',
-        token: data.verificationToken || null,
         email: formData.email,
       });
     } catch (err) {
@@ -126,17 +125,6 @@ export default function RegisterPage() {
               <strong className="capitalize text-slate-900">{role}</strong> telah dibuat.
               Silakan lakukan verifikasi email.
             </p>
-            {successInfo.token && (
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => navigate(`/verify-email?token=${successInfo.token}`)}
-                  className="w-full py-2.5 px-4 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition"
-                >
-                  Verifikasi Email Sekarang
-                </button>
-              </div>
-            )}
             <div className="text-center pt-2">
               <Link to="/login" className="text-sm font-medium text-emerald-600 hover:underline">
                 Menuju Halaman Masuk

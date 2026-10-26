@@ -9,10 +9,7 @@ export const socket = io(SOCKET_URL, {
   transports: ['websocket', 'polling'],
 });
 
-export function connectSocket(token) {
-  const authToken = token || localStorage.getItem('token');
-  if (!authToken) return socket;
-  socket.auth = { token: authToken };
+export function connectSocket() {
   if (!socket.connected) {
     socket.connect();
   }

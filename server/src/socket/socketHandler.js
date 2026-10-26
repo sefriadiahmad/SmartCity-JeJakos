@@ -15,7 +15,12 @@ const MessageModel = require('../models/message.model');
 function initializeSocketHandler(io) {
   // Middleware: authenticate socket connection via JWT
   io.use((socket, next) => {
-    const token = socket.handshake.auth.token || socket.handshake.query.token;
+    const cookieToken = socket.handshake.headers.cookie
+      ?.split(';')
+      .map((value) => value.trim())
+      .find((value) => value.startsWith('accessToken='))
+      ?.substring('accessToken='.length);
+    const token = socket.handshake.auth.token || socket.handshake.query.token || cookieToken;
     if (!token) {
       return next(new Error('Token not provided'));
     }

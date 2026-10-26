@@ -102,6 +102,10 @@ async function runTests() {
     const notFoundRes = await fetch(`${baseUrl}/999999`);
     assert.strictEqual(notFoundRes.status, 404);
 
+    console.log('3c. Testing GET /api/kos/:id rejects malformed ID...');
+    const malformedIdRes = await fetch(`${baseUrl}/${encodeURIComponent('1 OR 1=1')}`);
+    assert.strictEqual(malformedIdRes.status, 400);
+
     // 4. Create Kos Authorization
     console.log('4. Testing POST /api/kos without token...');
     const noAuthRes = await fetch(baseUrl, {

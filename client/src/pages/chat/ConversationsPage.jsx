@@ -20,10 +20,7 @@ export default function ConversationsPage() {
 
   // 1. Initialize Socket Connection for authenticated user
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      connectSocket(token);
-    }
+    connectSocket();
   }, []);
 
   // 2. Fetch Conversations List
