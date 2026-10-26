@@ -86,9 +86,17 @@ export default function Navbar() {
               Cari Kos
             </Link>
             {isAuthenticated && user?.role === 'pemilik' && (
-              <Link to="/dashboard" className="hover:text-emerald-600 transition">
-                Kelola Kos
-              </Link>
+              <>
+                <Link to="/dashboard" className="hover:text-emerald-600 transition">
+                  Kelola Kos
+                </Link>
+                <Link to="/dashboard?tab=bookings" className="hover:text-emerald-600 transition">
+                  Pesanan Masuk
+                </Link>
+                <Link to="/dashboard?tab=invoices" className="hover:text-emerald-600 transition">
+                  Tagihan
+                </Link>
+              </>
             )}
             {isAuthenticated && user?.role === 'pencari' && (
               <>
@@ -212,13 +220,29 @@ export default function Navbar() {
             </Link>
 
             {isAuthenticated && user?.role === 'pemilik' && (
-              <Link
-                to="/dashboard"
-                onClick={() => setIsOpen(false)}
-                className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Kelola Kos
-              </Link>
+              <>
+                <Link
+                  to="/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Kelola Kos
+                </Link>
+                <Link
+                  to="/dashboard?tab=bookings"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Pesanan Masuk
+                </Link>
+                <Link
+                  to="/dashboard?tab=invoices"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Tagihan Penghuni
+                </Link>
+              </>
             )}
             {isAuthenticated && user?.role === 'pencari' && (
               <>

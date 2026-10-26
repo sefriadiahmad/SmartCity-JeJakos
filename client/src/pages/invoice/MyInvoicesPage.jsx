@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import { socket, connectSocket } from '../../services/socket';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -33,6 +34,15 @@ const STATUS_CONFIG = {
 };
 
 export default function MyInvoicesPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === 'pemilik') {
+      navigate('/dashboard?tab=invoices', { replace: true });
+    }
+  }, [user, navigate]);
+
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
