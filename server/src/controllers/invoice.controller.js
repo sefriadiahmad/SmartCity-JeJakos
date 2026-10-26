@@ -1,4 +1,5 @@
 const InvoiceModel = require('../models/invoice.model');
+const BookingModel = require('../models/booking.model');
 const MidtransService = require('../services/midtrans.service');
 
 const InvoiceController = {
@@ -113,6 +114,77 @@ const InvoiceController = {
         invoice_id: invoice.id,
         amount: invoice.amount,
         ...snapData,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /api/invoices/:id/manual — [pemilik, admin] catat bayar manual (F-33, F-30)
+   */
+  async recordManualPayment(req, res, next) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'ID tagihan tidak valid' });
+      }
+
+      const invoice = await InvoiceModel.findById(id);
+      if (!invoice) {
+        return res.status(404).json({ error: 'Tagihan tidak ditemukan' });
+      }
+
+      const isAdmin = req.user.role === 'admin';
+      const isOwner = req.user.id === invoice.owner.id;
+
+      if (!isAdmin && !isOwner) {
+        return res.status(403).json({
+          error: 'Akses ditolak. Anda bukan pemilik kos dari tagihan ini',
+        });
+      }
+
+      if (invoice.status === 'paid') {
+        return res.status(400).json({
+          error: 'Tagihan ini sudah lunas',
+        });
+      }
+
+      const {
+        payment_method = 'manual',
+        payment_ref = null,
+        paid_at = null,
+      } = req.body;
+
+      const allowedMethods = ['manual', 'transfer'];
+      const chosenMethod = allowedMethods.includes(payment_method) ? payment_method : 'manual';
+      const defaultRef = `Pembayaran manual dikonfirmasi oleh ${req.user.name || 'pemilik kos'}`;
+      const chosenRef = payment_ref ? payment_ref.trim() : defaultRef;
+      const paymentDate = paid_at || new Date();
+
+      await InvoiceModel.updateStatus(invoice.id, {
+        status: 'paid',
+        payment_method: chosenMethod,
+        payment_ref: chosenRef,
+        paid_at: paymentDate,
+      });
+
+      // F-30: Catat penghuni aktif setelah pemesanan diterima & dibayar
+      if (invoice.booking_id) {
+        const booking = await BookingModel.findById(invoice.booking_id);
+        if (booking && (booking.status === 'accepted' || booking.status === 'pending')) {
+          await BookingModel.recordActiveTenant(
+            booking.id,
+            `Pembayaran manual dikonfirmasi oleh pemilik (${chosenMethod})`
+          );
+        }
+      }
+
+      const updated = await InvoiceModel.findById(invoice.id);
+
+      res.json({
+        message: 'Pembayaran manual berhasil dicatat',
+        invoice: updated,
       });
     } catch (err) {
       next(err);

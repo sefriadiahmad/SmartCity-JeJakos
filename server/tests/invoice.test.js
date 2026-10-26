@@ -25,6 +25,11 @@ async function runTests() {
     { id: 2, email: 'budi.pemilik@gmail.com', role: 'pemilik' },
     process.env.JWT_SECRET
   );
+  // Other owner Siti (id: 3)
+  const ownerSitiToken = jwt.sign(
+    { id: 3, email: 'siti.pemilik@gmail.com', role: 'pemilik' },
+    process.env.JWT_SECRET
+  );
   // Tenant Ari (id: 5)
   const tenantAriToken = jwt.sign(
     { id: 5, email: 'ari.pencari@gmail.com', role: 'pencari' },
@@ -174,6 +179,64 @@ async function runTests() {
     assert.strictEqual(genAdminRes.status, 200);
     const genAdminData = await genAdminRes.json();
     assert.ok(typeof genAdminData.count === 'number');
+
+    // 5. Manual Payment Endpoint: POST /api/invoices/:id/manual (F-33)
+    console.log('5. Testing POST /api/invoices/:id/manual unauthenticated (401)...');
+    const noAuthManualRes = await fetch(`${baseUrl}/${testInvoiceId2}/manual`, {
+      method: 'POST',
+    });
+    assert.strictEqual(noAuthManualRes.status, 401);
+
+    console.log('5b. Testing POST /api/invoices/:id/manual with pencari token (403)...');
+    const pencariManualRes = await fetch(`${baseUrl}/${testInvoiceId2}/manual`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tenantAriToken}`,
+      },
+      body: JSON.stringify({ payment_method: 'manual' }),
+    });
+    assert.strictEqual(pencariManualRes.status, 403);
+
+    console.log('5c. Testing POST /api/invoices/:id/manual with other owner Siti (403)...');
+    const otherOwnerManualRes = await fetch(`${baseUrl}/${testInvoiceId2}/manual`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${ownerSitiToken}`,
+      },
+      body: JSON.stringify({ payment_method: 'manual' }),
+    });
+    assert.strictEqual(otherOwnerManualRes.status, 403);
+
+    console.log('5d. Testing POST /api/invoices/:id/manual with owner Budi (200, F-33)...');
+    const ownerManualRes = await fetch(`${baseUrl}/${testInvoiceId2}/manual`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${ownerBudiToken}`,
+      },
+      body: JSON.stringify({
+        payment_method: 'manual',
+        payment_ref: 'Tunai diterima langsung oleh Pak Budi',
+      }),
+    });
+    assert.strictEqual(ownerManualRes.status, 200);
+    const ownerManualData = await ownerManualRes.json();
+    assert.strictEqual(ownerManualData.invoice.status, 'paid');
+    assert.strictEqual(ownerManualData.invoice.payment_method, 'manual');
+    assert.strictEqual(ownerManualData.invoice.payment_ref, 'Tunai diterima langsung oleh Pak Budi');
+
+    console.log('5e. Testing POST /api/invoices/:id/manual on already paid invoice (400)...');
+    const dupManualRes = await fetch(`${baseUrl}/${testInvoiceId2}/manual`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${ownerBudiToken}`,
+      },
+      body: JSON.stringify({ payment_method: 'manual' }),
+    });
+    assert.strictEqual(dupManualRes.status, 400);
 
   } finally {
     // Cleanup
