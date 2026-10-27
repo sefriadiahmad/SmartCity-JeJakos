@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { FiMessageCircle, FiRefreshCw, FiSend, FiX } from 'react-icons/fi';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import ChatbotMessage from './ChatbotMessage';
@@ -185,30 +186,30 @@ export default function ChatbotWidget({ defaultOpen = false }) {
           type="button"
           onClick={() => setIsOpen(true)}
           aria-label="Buka Chatbot Tanya JeJakos"
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 group cursor-pointer"
+          className="group fixed bottom-5 right-5 z-40 flex h-15 w-15 items-center justify-center rounded-[1.35rem] border border-white/20 bg-slate-950 text-white shadow-[0_18px_45px_-15px_rgba(5,150,105,0.75)] transition duration-300 hover:-translate-y-1 hover:bg-emerald-700 hover:shadow-[0_22px_50px_-15px_rgba(5,150,105,0.9)] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 motion-safe:animate-[chatbot-launch_.55s_cubic-bezier(.16,1,.3,1)_both] sm:bottom-6 sm:right-6"
         >
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-200" />
+          <span className="absolute -inset-1 rounded-[1.6rem] border border-emerald-400/50 motion-safe:animate-[chatbot-ring_2.6s_ease-out_infinite]" />
+          <FiMessageCircle className="relative h-7 w-7 transition-transform duration-300 group-hover:scale-110" />
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 rounded-full border-2 border-white bg-emerald-400" />
+          <span className="pointer-events-none absolute right-full mr-3 hidden whitespace-nowrap rounded-lg bg-slate-950 px-3 py-1.5 text-xs font-bold text-white opacity-0 shadow-lg transition group-hover:opacity-100 md:block">
+            Tanya JeJakos
           </span>
-          <span className="text-lg">🤖</span>
-          <span className="font-extrabold tracking-wide">Tanya JeJakos</span>
         </button>
       )}
 
       {/* Chatbot Window Overlay (Design §5.2 line 503: Full-screen mobile, floating panel on md:) */}
       {isOpen && (
-        <div className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 md:w-[410px] md:h-[620px] bg-white z-50 flex flex-col md:rounded-2xl md:shadow-2xl md:border md:border-slate-200/90 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-white motion-safe:animate-[chatbot-panel-in_.35s_cubic-bezier(.16,1,.3,1)_both] md:inset-auto md:bottom-6 md:right-6 md:h-[620px] md:w-[410px] md:rounded-3xl md:border md:border-slate-200 md:shadow-2xl">
           {/* Header */}
           <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-slate-900 text-white px-4 py-3.5 flex items-center justify-between shrink-0 shadow-sm">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-lg border border-white/20">
-                🤖
+              <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+                <FiMessageCircle className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="text-sm font-bold flex items-center gap-1.5 leading-tight">
                   Tanya JeJakos
-                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 motion-safe:animate-pulse" />
                 </h3>
                 <p className="text-[11px] text-emerald-200/90 leading-tight">
                   Asisten Cerdas Rekomendasi Kos Jambi
@@ -221,17 +222,18 @@ export default function ChatbotWidget({ defaultOpen = false }) {
                 type="button"
                 onClick={handleResetSession}
                 title="Mulai percakapan baru"
-                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 transition cursor-pointer text-xs"
+                className="flex items-center gap-1 p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 transition cursor-pointer text-xs"
               >
-                ↺ Baru
+                <FiRefreshCw className="h-3.5 w-3.5" /> Baru
               </button>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 title="Tutup chatbot"
-                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 transition cursor-pointer text-sm font-bold"
+                aria-label="Tutup chatbot"
+                className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 transition cursor-pointer"
               >
-                ✕
+                <FiX className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -280,8 +282,8 @@ export default function ChatbotWidget({ defaultOpen = false }) {
             {/* Loading Indicator */}
             {loading && (
               <div className="flex items-center gap-2 text-slate-500 text-xs py-2 pl-2">
-                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
-                  🤖
+                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <FiMessageCircle className="h-3.5 w-3.5" />
                 </div>
                 <div className="bg-slate-100 px-3.5 py-2 rounded-2xl rounded-tl-xs flex items-center gap-1.5 border border-slate-200/80">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce" />
@@ -352,19 +354,7 @@ export default function ChatbotWidget({ defaultOpen = false }) {
                 aria-label="Kirim Pesan"
                 className="p-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition shrink-0 cursor-pointer shadow-xs"
               >
-                <svg
-                  className="w-4 h-4 transform rotate-90"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2.5"
-                    d="M12 19V5m0 0l-7 7m7-7l7 7"
-                  />
-                </svg>
+                <FiSend className="h-4 w-4" />
               </button>
             </div>
             <p className="text-[10px] text-slate-400 mt-1.5 text-center">
