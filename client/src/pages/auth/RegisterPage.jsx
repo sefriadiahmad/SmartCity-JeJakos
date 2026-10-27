@@ -1,20 +1,22 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import useAuth from '../../hooks/useAuth';
+import background from '../../assets/background.jpeg';
+
+const googleLoginUrl = `${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '')}/api/auth/google`;
+
+function GoogleIcon() {
+  return <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5a4.7 4.7 0 0 1-2 3.1v2.5h3.2c1.9-1.8 3.1-4.3 3.1-7.4Z" /><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.7-2.4l-3.2-2.5c-.9.6-2 .9-3.5.9-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z" /><path fill="#FBBC05" d="M6.4 13.9A6 6 0 0 1 6.1 12c0-.7.1-1.3.3-1.9V7.5H3.1A10 10 0 0 0 2 12c0 1.6.4 3.1 1.1 4.5l3.3-2.6Z" /><path fill="#EA4335" d="M12 6c1.5 0 2.9.5 3.9 1.5l2.9-2.9C17 3 14.7 2 12 2a10 10 0 0 0-8.9 5.5l3.3 2.6C7.2 7.7 9.4 6 12 6Z" /></svg>;
+}
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
   const { register } = useAuth();
-  const [role, setRole] = useState('pencari');
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '' });
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [successInfo, setSuccessInfo] = useState(null);
 
@@ -23,227 +25,51 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (error) setError('');
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    if (!formData.email || !formData.password) {
-      setError('Email dan kata sandi wajib diisi.');
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError('Kata sandi minimal 8 karakter.');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Konfirmasi kata sandi tidak cocok.');
-      return;
-    }
-
-    if (!agreed) {
-      setError('Anda harus menyetujui syarat & kebijakan privasi.');
-      return;
-    }
-
+    if (!formData.email || !formData.password) return setError('Email dan kata sandi wajib diisi.');
+    if (formData.password.length < 8) return setError('Kata sandi minimal 8 karakter.');
+    if (formData.password !== formData.confirmPassword) return setError('Konfirmasi kata sandi tidak cocok.');
+    if (!agreed) return setError('Anda harus menyetujui syarat dan kebijakan privasi.');
     setLoading(true);
     try {
-      const data = await register({
-        email: formData.email,
-        password: formData.password,
-        role,
-        name: formData.name || undefined,
-        phone: formData.phone || undefined,
-      });
-
-      setSuccessInfo({
-        message: data.message || 'Registrasi berhasil.',
-        email: formData.email,
-      });
+      const data = await register({ ...formData, role: 'pencari' });
+      setSuccessInfo({ message: data.message || 'Registrasi berhasil.', email: formData.email });
     } catch (err) {
-      const msg =
-        err.response?.data?.error ||
-        err.response?.data?.errors?.[0]?.msg ||
-        'Gagal melakukan pendaftaran. Silakan coba lagi.';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
+      setError(err.response?.data?.error || err.response?.data?.errors?.[0]?.msg || 'Gagal melakukan pendaftaran. Silakan coba lagi.');
+    } finally { setLoading(false); }
   };
-
-  return (
-    <div className="flex-1 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 bg-slate-50">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">Daftar Akun JeJakos</h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Bergabung dengan platform digitalisasi hunian kos di Jambi
-          </p>
-        </div>
-
-        {/* Role Selector Tabs */}
-        <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-6">
-          <button
-            type="button"
-            onClick={() => setRole('pencari')}
-            className={`py-2 text-sm font-semibold rounded-lg transition ${
-              role === 'pencari'
-                ? 'bg-white text-emerald-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Pencari Kos
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole('pemilik')}
-            className={`py-2 text-sm font-semibold rounded-lg transition ${
-              role === 'pemilik'
-                ? 'bg-white text-emerald-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Pemilik Kos
+  const inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
+  const form = successInfo ? (
+    <div className="w-full max-w-md px-6 py-10 sm:px-10"><div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-slate-800"><h1 className="text-xl font-bold text-emerald-900">Registrasi berhasil</h1><p className="mt-2 text-sm leading-6">Akun pencari kos untuk <strong>{successInfo.email}</strong> sudah aktif. Verifikasi email tidak diperlukan.</p><Link to="/login" className="mt-5 block rounded-xl bg-emerald-700 px-4 py-3 text-center text-sm font-bold text-white hover:bg-emerald-800">Masuk ke akun</Link></div></div>
+  ) : (
+    <div className="w-full max-w-md px-6 py-10 sm:px-10 lg:py-12 motion-safe:animate-[auth-rise_.55s_ease-out_both]">
+      <div className="mb-7"><p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">JeJakos Jambi</p><h1 className="text-3xl font-bold tracking-tight text-slate-950">Mulai cari kos.</h1><p className="mt-3 text-sm leading-6 text-slate-600">Buat akun pencari untuk menemukan hunian sesuai kebutuhan.</p></div>
+      {error && <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      <a href={googleLoginUrl} className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"><GoogleIcon />Login Dengan Google</a>
+      <div className="my-5 flex items-center gap-3 text-xs text-slate-400"><span className="h-px flex-1 bg-slate-200" />atau daftar dengan email<span className="h-px flex-1 bg-slate-200" /></div>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <input id="reg-name" name="name" type="text" autoComplete="name" value={formData.name} onChange={handleChange} placeholder="Nama lengkap" className={inputClass} />
+        <input id="reg-email" name="email" type="email" autoComplete="email" required value={formData.email} onChange={handleChange} placeholder="Alamat email" className={inputClass} />
+        <input id="reg-phone" name="phone" type="tel" autoComplete="tel" value={formData.phone} onChange={handleChange} placeholder="Nomor WhatsApp (opsional)" className={inputClass} />
+        <div className="relative">
+          <input id="reg-pass" name="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" required minLength={8} value={formData.password} onChange={handleChange} placeholder="Kata sandi, min. 8 karakter" className={`${inputClass} pr-11`} />
+          <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-slate-500 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500">
+            {showPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
           </button>
         </div>
-
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        {successInfo ? (
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-slate-800 space-y-3">
-            <h2 className="text-base font-semibold text-emerald-800">
-              Registrasi Berhasil!
-            </h2>
-            <p className="text-sm text-slate-600">
-              Akun <strong className="text-slate-900">{successInfo.email}</strong> sebagai{' '}
-              <strong className="capitalize text-slate-900">{role}</strong> telah dibuat.
-              Silakan lakukan verifikasi email.
-            </p>
-            <div className="text-center pt-2">
-              <Link to="/login" className="text-sm font-medium text-emerald-600 hover:underline">
-                Menuju Halaman Masuk
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="reg-name" className="block text-xs font-semibold text-slate-700 mb-1">
-                Nama Lengkap
-              </label>
-              <input
-                id="reg-name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="cth. Budi Santoso"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="reg-email" className="block text-xs font-semibold text-slate-700 mb-1">
-                Alamat Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="reg-email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="nama@email.com"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="reg-phone" className="block text-xs font-semibold text-slate-700 mb-1">
-                Nomor Telepon / WhatsApp
-              </label>
-              <input
-                id="reg-phone"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="081234567890"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="reg-pass" className="block text-xs font-semibold text-slate-700 mb-1">
-                Kata Sandi <span className="text-red-500">*</span> (min. 8 karakter)
-              </label>
-              <input
-                id="reg-pass"
-                name="password"
-                type="password"
-                required
-                minLength={8}
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="reg-confirm" className="block text-xs font-semibold text-slate-700 mb-1">
-                Konfirmasi Kata Sandi <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="reg-confirm"
-                name="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="••••••••"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            {/* Privacy & Terms Consent (NF-06) */}
-            <div className="flex items-start gap-2 pt-1">
-              <input
-                id="reg-consent"
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-              />
-              <label htmlFor="reg-consent" className="text-xs text-slate-600 leading-tight">
-                Saya menyetujui Ketentuan Layanan dan Kebijakan Privasi JeJakos, serta mengizinkan
-                pemrosesan data untuk penyewaan kos di Jambi.
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-2 py-2.5 px-4 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition disabled:opacity-50"
-            >
-              {loading ? 'Mendaftarkan Akun...' : 'Daftar Sekarang'}
-            </button>
-          </form>
-        )}
-
-        <div className="mt-6 text-center text-xs text-slate-600">
-          Sudah memiliki akun?{' '}
-          <Link to="/login" className="font-semibold text-emerald-600 hover:text-emerald-700">
-            Masuk di sini
-          </Link>
+        <div className="relative">
+          <input id="reg-confirm" name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} autoComplete="new-password" required value={formData.confirmPassword} onChange={handleChange} placeholder="Konfirmasi kata sandi" className={`${inputClass} pr-11`} />
+          <button type="button" onClick={() => setShowConfirmPassword((visible) => !visible)} aria-label={showConfirmPassword ? 'Sembunyikan konfirmasi kata sandi' : 'Tampilkan konfirmasi kata sandi'} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-slate-500 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500">
+            {showConfirmPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
+          </button>
         </div>
-      </div>
+        <label className="flex cursor-pointer items-start gap-2 pt-2 text-xs leading-5 text-slate-600"><input id="reg-consent" type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />Saya menyetujui Ketentuan Layanan dan Kebijakan Privasi JeJakos.</label>
+        <button type="submit" disabled={loading} className="w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 disabled:opacity-50">{loading ? 'Mendaftarkan Akun...' : 'Buat Akun Pencari'}</button>
+      </form>
+      <p className="mt-6 text-center text-xs text-slate-600">Sudah memiliki akun? <Link to="/login" className="font-bold text-emerald-700 hover:underline">Masuk di sini</Link></p>
     </div>
   );
+  return <div className="flex flex-1 bg-white lg:min-h-[calc(100vh-8rem)]"><section className="flex min-h-full flex-1 items-center justify-center">{form}</section><aside className="relative hidden w-1/2 overflow-hidden bg-slate-950 lg:block"><img src={background} alt="Hunian nyaman di Jambi" className="h-full w-full object-cover motion-safe:animate-[auth-zoom_12s_ease-out_both]" /><div className="absolute inset-0 bg-gradient-to-bl from-emerald-950/55 via-slate-900/20 to-slate-950/80" /><div className="absolute inset-x-0 bottom-0 p-12 text-white motion-safe:animate-[auth-rise_.7s_.15s_ease-out_both]"><p className="max-w-md text-3xl font-bold leading-tight">Satu akun untuk mulai menemukan hunian yang tepat.</p><p className="mt-4 text-sm text-white/75">Punya kos? Ajukan kemitraan dari profil setelah masuk.</p></div></aside></div>;
 }

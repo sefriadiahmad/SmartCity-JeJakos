@@ -74,6 +74,14 @@ const UserModel = {
     return result.affectedRows > 0;
   },
 
+  async becomePartner(id) {
+    const [result] = await db.execute(
+      "UPDATE users SET role = 'pemilik', is_approved = 0 WHERE id = ? AND role = 'pencari'",
+      [id]
+    );
+    return result.affectedRows > 0;
+  },
+
   async findAll({ page = 1, limit = 10, role = null, search = null, is_approved = null, is_verified = null } = {}) {
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));

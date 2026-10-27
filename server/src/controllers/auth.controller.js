@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const UserModel = require('../models/user.model');
 
 const authCookieOptions = {
@@ -16,10 +17,23 @@ const refreshCookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
+function createSession(res, user) {
+  const accessToken = jwt.sign(
+    { id: user.id, email: user.email, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
+  );
+  const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+
+  res.cookie('accessToken', accessToken, authCookieOptions);
+  res.cookie('refreshToken', refreshToken, refreshCookieOptions);
+}
+
 const authController = {
   async register(req, res, next) {
     try {
-      const { email, password, role, name, phone } = req.body;
+      const { email, password, name, phone } = req.body;
+      const role = 'pencari';
 
       const existing = await UserModel.findByEmail(email.toLowerCase().trim());
       if (existing) {
@@ -33,25 +47,19 @@ const authController = {
         role,
         name: name || null,
         phone: phone || null,
-        is_verified: false,
+        is_verified: true,
         is_approved: false,
       });
 
-      const verificationToken = jwt.sign(
-        { id: userId, email: email.toLowerCase().trim(), type: 'verify_email' },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-
       res.status(201).json({
-        message: 'Registrasi berhasil. Periksa email untuk tautan verifikasi.',
+        message: 'Registrasi berhasil. Silakan masuk ke akun Anda.',
         user: {
           id: userId,
           email: email.toLowerCase().trim(),
           role,
           name: name || null,
           phone: phone || null,
-          is_verified: false,
+          is_verified: true,
           is_approved: false,
         },
       });
@@ -74,20 +82,7 @@ const authController = {
         return res.status(401).json({ error: 'Email atau password salah' });
       }
 
-      const accessToken = jwt.sign(
-        { id: user.id, email: user.email, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: '15m' }
-      );
-
-      const refreshToken = jwt.sign(
-        { id: user.id },
-        process.env.JWT_REFRESH_SECRET,
-        { expiresIn: '7d' }
-      );
-
-      res.cookie('accessToken', accessToken, authCookieOptions);
-      res.cookie('refreshToken', refreshToken, refreshCookieOptions);
+      createSession(res, user);
 
       res.json({
         message: 'Login berhasil',
@@ -104,6 +99,87 @@ const authController = {
       });
     } catch (err) {
       next(err);
+    }
+  },
+
+  async googleLogin(req, res) {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      return res.status(503).send('Login Google belum dikonfigurasi.');
+    }
+
+    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const params = new URLSearchParams({
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'openid email profile',
+      prompt: 'select_account',
+    });
+    res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+  },
+
+  async googleCallback(req, res, next) {
+    let stage = 'menerima respons Google';
+    try {
+      const { code } = req.query;
+      if (!code) return res.redirect(`${process.env.CLIENT_URL}/login?error=google`);
+      if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.redirect(`${process.env.CLIENT_URL}/login?error=google-config`);
+      }
+
+      const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+      stage = 'menukar kode otorisasi';
+      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          client_secret: process.env.GOOGLE_CLIENT_SECRET,
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code',
+        }),
+      });
+      if (!tokenResponse.ok) {
+        console.error(`[Google OAuth] Token exchange gagal: ${await tokenResponse.text()}`);
+        return res.redirect(`${process.env.CLIENT_URL}/login?error=google`);
+      }
+
+      const { access_token: googleAccessToken } = await tokenResponse.json();
+      stage = 'mengambil profil Google';
+      const profileResponse = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+        headers: { Authorization: `Bearer ${googleAccessToken}` },
+      });
+      const profile = await profileResponse.json();
+      if (!profileResponse.ok || !profile.email || !profile.email_verified) {
+        return res.redirect(`${process.env.CLIENT_URL}/login?error=google`);
+      }
+
+      const email = profile.email.toLowerCase().trim();
+      stage = 'mencari akun lokal';
+      let user = await UserModel.findByEmail(email);
+      if (!user) {
+        stage = 'membuat akun pencari';
+        const password_hash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+        const userId = await UserModel.create({
+          email,
+          password_hash,
+          role: 'pencari',
+          name: profile.name || null,
+          // Google profile URLs can exceed users.photo_url VARCHAR(500).
+          photo_url: profile.picture?.length <= 500 ? profile.picture : null,
+          is_verified: true,
+          is_approved: false,
+        });
+        user = await UserModel.findById(userId, true);
+      }
+
+      stage = 'membuat sesi login';
+      createSession(res, user);
+      res.redirect(`${process.env.CLIENT_URL}/`);
+    } catch (err) {
+      console.error(`[Google OAuth] Gagal saat ${stage}: ${err.message}`);
+      res.redirect(`${process.env.CLIENT_URL}/login?error=google-callback`);
     }
   },
 
@@ -257,6 +333,19 @@ const authController = {
         message: 'Profil berhasil diperbarui',
         user: updatedUser,
       });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async becomePartner(req, res, next) {
+    try {
+      const changed = await UserModel.becomePartner(req.user.id);
+      if (!changed) {
+        return res.status(400).json({ error: 'Akun ini tidak dapat didaftarkan sebagai mitra.' });
+      }
+      const user = await UserModel.findById(req.user.id);
+      res.json({ message: 'Pendaftaran mitra dikirim. Menunggu persetujuan admin.', user });
     } catch (err) {
       next(err);
     }

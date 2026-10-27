@@ -23,3 +23,21 @@ html, body, #root {
   background: transparent !important;
   border: none !important;
 }
+
+@keyframes auth-rise {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes auth-zoom {
+  from { transform: scale(1.04); }
+  to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe\:animate-\[auth-rise_\.55s_ease-out_both\],
+  .motion-safe\:animate-\[auth-rise_\.7s_\.15s_ease-out_both\],
+  .motion-safe\:animate-\[auth-zoom_12s_ease-out_both\] {
+    animation: none;
+  }
+}

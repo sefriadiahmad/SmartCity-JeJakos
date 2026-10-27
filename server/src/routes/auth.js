@@ -13,13 +13,16 @@ router.post(
   [
     body('email').isEmail().withMessage('Format email tidak valid'),
     body('password').isLength({ min: 8 }).withMessage('Password minimal 8 karakter'),
-    body('role').isIn(['pencari', 'pemilik']).withMessage('Peran harus pencari atau pemilik'),
     body('name').optional().trim(),
     body('phone').optional().trim(),
     validate,
   ],
   authController.register
 );
+
+// Google OAuth creates new accounts as pencari.
+router.get('/google', authController.googleLogin);
+router.get('/google/callback', authController.googleCallback);
 
 // POST /api/auth/login
 router.post(
@@ -76,6 +79,9 @@ router.put(
   ],
   authController.updateProfile
 );
+
+// Pencari mengajukan akun mitra; admin tetap menentukan persetujuannya.
+router.post('/become-partner', auth, authController.becomePartner);
 
 // POST /api/auth/logout
 router.post('/logout', authController.logout);
