@@ -12,13 +12,9 @@ import TagihanPenghuniTab from './components/TagihanPenghuniTab';
 
 export default function PemilikDashboard() {
   const { user } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const rawTab = searchParams.get('tab');
-  const tabFromUrl = rawTab === 'bookings' ? 'bookings' : rawTab === 'invoices' ? 'invoices' : 'kos';
-
-  const [activeTab, setActiveTab] = useState(tabFromUrl);
-  const [pendingBookingsCount, setPendingBookingsCount] = useState(0);
-  const [overdueInvoicesCount, setOverdueInvoicesCount] = useState(0);
+  const activeTab = rawTab === 'bookings' ? 'bookings' : rawTab === 'invoices' ? 'invoices' : 'kos';
 
   const [kosList, setKosList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,38 +66,6 @@ export default function PemilikDashboard() {
       active = false;
     };
   }, [userId]);
-
-  useEffect(() => {
-    let active = true;
-    async function checkPendingAndOverdue() {
-      try {
-        const [bookingsRes, invoicesRes] = await Promise.all([
-          api.get('/bookings?status=pending&limit=100'),
-          api.get('/invoices?status=overdue&limit=100'),
-        ]);
-
-        if (active) {
-          const bookingCount =
-            bookingsRes.data?.total !== undefined
-              ? bookingsRes.data.total
-              : bookingsRes.data?.bookings?.length || 0;
-          setPendingBookingsCount(bookingCount);
-
-          const invoiceCount =
-            invoicesRes.data?.total !== undefined
-              ? invoicesRes.data.total
-              : invoicesRes.data?.invoices?.length || 0;
-          setOverdueInvoicesCount(invoiceCount);
-        }
-      } catch {
-        // ignore
-      }
-    }
-    checkPendingAndOverdue();
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // Actions
   const handleOpenCreateKos = () => {
@@ -181,87 +145,12 @@ export default function PemilikDashboard() {
           )}
         </div>
 
-        {/* Navigation Tabs (Kelola Kos vs Pesanan Masuk) */}
-        <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 scrollbar-none">
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('kos');
-              setSearchParams({});
-            }}
-            className={`py-3 px-4 text-xs sm:text-sm font-bold border-b-2 transition flex items-center gap-2 cursor-pointer ${
-              activeTab === 'kos'
-                ? 'border-emerald-600 text-emerald-800'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <span>🏠</span>
-            <span>Kelola Properti Kos</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
-              {kosList.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('bookings');
-              setSearchParams({ tab: 'bookings' });
-            }}
-            className={`py-3 px-4 text-xs sm:text-sm font-bold border-b-2 transition flex items-center gap-2 cursor-pointer ${
-              activeTab === 'bookings'
-                ? 'border-emerald-600 text-emerald-800'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <span>📋</span>
-            <span>Pesanan Masuk</span>
-            {pendingBookingsCount > 0 ? (
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-rose-600 text-white font-extrabold animate-pulse">
-                {pendingBookingsCount} baru
-              </span>
-            ) : null}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('invoices');
-              setSearchParams({ tab: 'invoices' });
-            }}
-            className={`py-3 px-4 text-xs sm:text-sm font-bold border-b-2 transition flex items-center gap-2 cursor-pointer ${
-              activeTab === 'invoices'
-                ? 'border-emerald-600 text-emerald-800'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <span>🧾</span>
-            <span>Tagihan Penghuni</span>
-            {overdueInvoicesCount > 0 ? (
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-rose-600 text-white font-extrabold animate-pulse">
-                {overdueInvoicesCount} tertunggak
-              </span>
-            ) : null}
-          </button>
-        </div>
-
-        {/* Tab 2: Pesanan Masuk (F-28) */}
+        {/* Tab Content — driven by sidebar ?tab= query param */}
         {activeTab === 'bookings' ? (
-          <PesananMasukTab
-            onStatsUpdated={(allBookings) => {
-              const pending = allBookings.filter((b) => b.status === 'pending').length;
-              setPendingBookingsCount(pending);
-            }}
-          />
+          <PesananMasukTab />
         ) : activeTab === 'invoices' ? (
           /* Tab 3: Tagihan Penghuni & Catat Manual (F-33, F-35) */
-          <TagihanPenghuniTab
-            kosList={kosList}
-            onStatsUpdated={(allInvoices) => {
-              const overdue = allInvoices.filter((i) => i.status === 'overdue').length;
-              setOverdueInvoicesCount(overdue);
-            }}
-          />
+          <TagihanPenghuniTab kosList={kosList} />
         ) : (
           /* Tab 1: Properti Kos */
           <>

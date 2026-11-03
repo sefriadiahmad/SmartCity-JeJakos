@@ -48,7 +48,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const data = await login(formData.email, formData.password);
-      navigate(data.user?.role === 'admin' ? '/admin/dashboard' : '/');
+      navigate(data.user?.role === 'admin' ? '/admin/dashboard' : data.user?.role === 'pemilik' ? '/dashboard' : '/bookings');
     } catch (err) {
       setError(err.response?.data?.error || err.response?.data?.errors?.[0]?.msg || 'Email atau kata sandi tidak sesuai.');
     } finally {

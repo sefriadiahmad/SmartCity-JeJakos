@@ -16,6 +16,42 @@ const AdminController = {
       const [[{ totalReviews }]] = await db.execute('SELECT COUNT(*) AS totalReviews FROM reviews');
       const [[{ totalRooms }]] = await db.execute('SELECT COUNT(*) AS totalRooms FROM rooms');
 
+      // Analytics breakdowns
+      const [usersByRole] = await db.execute('SELECT role, COUNT(*) AS count FROM users GROUP BY role');
+      const [kosByType] = await db.execute('SELECT type, COUNT(*) AS count FROM kos GROUP BY type');
+      const [kosByDistrict] = await db.execute('SELECT COALESCE(district, \'Lainnya\') AS district, COUNT(*) AS count FROM kos GROUP BY district ORDER BY count DESC LIMIT 10');
+      const [[{ availableRooms }]] = await db.execute('SELECT COUNT(*) AS availableRooms FROM rooms WHERE is_available = 1');
+      const [ratingDist] = await db.execute('SELECT rating, COUNT(*) AS count FROM reviews GROUP BY rating ORDER BY rating');
+
+      // Monthly registration trend (last 6 months)
+      const [monthlyUsers] = await db.execute(
+        `SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS count
+         FROM users
+         WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+         GROUP BY month ORDER BY month`
+      );
+      const [monthlyKos] = await db.execute(
+        `SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS count
+         FROM kos
+         WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+         GROUP BY month ORDER BY month`
+      );
+
+      // Latest 5 records for preview tables
+      const [latestUsers] = await db.execute(
+        'SELECT id, name, email, role, is_approved, created_at FROM users ORDER BY created_at DESC LIMIT 5'
+      );
+      const [latestKos] = await db.execute(
+        'SELECT id, name, type, district, is_approved, status, created_at FROM kos ORDER BY created_at DESC LIMIT 5'
+      );
+      const [latestReviews] = await db.execute(
+        `SELECT r.id, r.rating, r.content, r.created_at, u.name AS user_name, k.name AS kos_name
+         FROM reviews r
+         LEFT JOIN users u ON r.user_id = u.id
+         LEFT JOIN kos k ON r.kos_id = k.id
+         ORDER BY r.created_at DESC LIMIT 5`
+      );
+
       res.json({
         totalUsers: Number(totalUsers),
         pendingOwners: Number(pendingOwners),
@@ -23,6 +59,17 @@ const AdminController = {
         pendingKos: Number(pendingKos),
         totalReviews: Number(totalReviews),
         totalRooms: Number(totalRooms),
+        availableRooms: Number(availableRooms),
+        occupiedRooms: Number(totalRooms) - Number(availableRooms),
+        usersByRole,
+        kosByType,
+        kosByDistrict,
+        ratingDist,
+        monthlyUsers,
+        monthlyKos,
+        latestUsers,
+        latestKos,
+        latestReviews,
       });
     } catch (err) {
       next(err);
