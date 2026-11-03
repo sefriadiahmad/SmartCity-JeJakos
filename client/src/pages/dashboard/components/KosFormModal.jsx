@@ -1,4 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { FiMapPin, FiCrosshair, FiX, FiLayers, FiCamera, FiCheckCircle, FiPlus } from 'react-icons/fi';
 import api from '../../../services/api';
 
 const JAMBI_DISTRICTS = [
@@ -23,6 +27,67 @@ const PRESET_COORDS = [
   { label: 'WTC Pasar', lat: -1.5920, lng: 103.6180 },
 ];
 
+// Map helper: click to set location
+function MapClickHandler({ onLocationSelect }) {
+  useMapEvents({
+    click(e) {
+      onLocationSelect(
+        Number(e.latlng.lat.toFixed(6)),
+        Number(e.latlng.lng.toFixed(6))
+      );
+    },
+  });
+  return null;
+}
+
+// Map helper: draggable marker
+function DraggableMarker({ lat, lng, onDragEnd }) {
+  const markerRef = useRef(null);
+
+  const pinSvg = renderToStaticMarkup(<FiMapPin style={{ width: 18, height: 18, color: 'white', strokeWidth: 2.5 }} />);
+  const pinIcon = L.divIcon({
+    className: '',
+    html: `<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#059669;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3)">${pinSvg}</div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+  });
+
+  const eventHandlers = {
+    dragend() {
+      const marker = markerRef.current;
+      if (marker) {
+        const pos = marker.getLatLng();
+        onDragEnd(Number(pos.lat.toFixed(6)), Number(pos.lng.toFixed(6)));
+      }
+    },
+  };
+
+  return (
+    <Marker
+      draggable
+      position={[lat, lng]}
+      ref={markerRef}
+      eventHandlers={eventHandlers}
+      icon={pinIcon}
+    />
+  );
+}
+
+// Map helper: fly to new coords when they change
+function FlyToUpdater({ lat, lng }) {
+  const map = useMap();
+  const prevRef = useRef({ lat, lng });
+
+  useEffect(() => {
+    if (lat && lng && (lat !== prevRef.current.lat || lng !== prevRef.current.lng)) {
+      map.flyTo([lat, lng], Math.max(map.getZoom(), 15), { duration: 0.8 });
+      prevRef.current = { lat, lng };
+    }
+  }, [lat, lng, map]);
+
+  return null;
+}
+
 export default function KosFormModal({ isOpen, onClose, onSuccess, initialData = null }) {
   const isEdit = Boolean(initialData?.id);
 
@@ -46,6 +111,7 @@ export default function KosFormModal({ isOpen, onClose, onSuccess, initialData =
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [geoLoading, setGeoLoading] = useState(false);
+  const [createdKos, setCreatedKos] = useState(null); // post-creation success step
 
   useEffect(() => {
     async function fetchFacilities() {
@@ -131,12 +197,13 @@ export default function KosFormModal({ isOpen, onClose, onSuccess, initialData =
       let res;
       if (isEdit) {
         res = await api.put(`/kos/${initialData.id}`, payload);
+        onSuccess(res.data?.kos);
+        onClose();
       } else {
         res = await api.post('/kos', payload);
+        onSuccess(res.data?.kos);
+        setCreatedKos(res.data?.kos);
       }
-
-      onSuccess(res.data?.kos);
-      onClose();
     } catch (err) {
       const msg =
         err.response?.data?.error ||
@@ -166,11 +233,64 @@ export default function KosFormModal({ isOpen, onClose, onSuccess, initialData =
             onClick={onClose}
             className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
           >
-            ✕
+            <FiX className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Form Body */}
+        {/* Post-creation success step */}
+        {createdKos ? (
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 text-center">
+            <div className="py-4">
+              <FiCheckCircle className="h-16 w-16 mx-auto text-emerald-500" />
+              <h3 className="text-lg font-bold text-slate-900 mt-4">Kos Berhasil Didaftarkan!</h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                Properti <strong>"{createdKos.name}"</strong> telah terdaftar. Langkah selanjutnya, tambahkan unit kamar dan foto agar kos Anda siap dipublikasikan.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  // Defer to let parent re-render, then open rooms modal
+                  setTimeout(() => {
+                    if (typeof window.__jejakos_openRooms === 'function') {
+                      window.__jejakos_openRooms(createdKos);
+                    }
+                  }, 100);
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-sm"
+              >
+                <FiLayers className="h-4 w-4" />
+                Tambah Kamar Sekarang
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  setTimeout(() => {
+                    if (typeof window.__jejakos_openPhotos === 'function') {
+                      window.__jejakos_openPhotos(createdKos);
+                    }
+                  }, 100);
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200"
+              >
+                <FiCamera className="h-4 w-4" />
+                Upload Foto Kos
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-xs text-slate-500 hover:text-slate-700 underline mt-2"
+            >
+              Lewati, tambahkan nanti
+            </button>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
           {error && (
             <div className="p-3 text-xs bg-red-50 text-red-700 border border-red-200 rounded-xl">
@@ -247,7 +367,7 @@ export default function KosFormModal({ isOpen, onClose, onSuccess, initialData =
             />
           </div>
 
-          {/* Koordinat & Presets */}
+          {/* Koordinat & Peta Interaktif */}
           <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-700">
@@ -259,7 +379,7 @@ export default function KosFormModal({ isOpen, onClose, onSuccess, initialData =
                 disabled={geoLoading}
                 className="text-xs font-medium text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1 rounded-lg transition"
               >
-                {geoLoading ? 'Mendeteksi...' : '📍 Gunakan Lokasi Saya'}
+                {geoLoading ? 'Mendeteksi...' : <><FiCrosshair className="inline -mt-0.5 mr-1 h-3.5 w-3.5" />Gunakan Lokasi Saya</>}
               </button>
             </div>
 
@@ -283,6 +403,35 @@ export default function KosFormModal({ isOpen, onClose, onSuccess, initialData =
                 </button>
               ))}
             </div>
+
+            {/* Interactive Map Picker */}
+            <div className="rounded-xl overflow-hidden border border-slate-200" style={{ height: 260 }}>
+              <MapContainer
+                center={[Number(formData.latitude) || -1.6140, Number(formData.longitude) || 103.5200]}
+                zoom={15}
+                style={{ height: '100%', width: '100%' }}
+                scrollWheelZoom
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <MapClickHandler
+                  onLocationSelect={(lat, lng) =>
+                    setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
+                  }
+                />
+                <DraggableMarker
+                  lat={Number(formData.latitude) || -1.6140}
+                  lng={Number(formData.longitude) || 103.5200}
+                  onDragEnd={(lat, lng) =>
+                    setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
+                  }
+                />
+                <FlyToUpdater lat={Number(formData.latitude)} lng={Number(formData.longitude)} />
+              </MapContainer>
+            </div>
+            <p className="text-[10px] text-slate-400">Klik pada peta atau geser pin untuk menentukan lokasi kos. Anda juga bisa memilih titik cepat di atas.</p>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -398,6 +547,7 @@ export default function KosFormModal({ isOpen, onClose, onSuccess, initialData =
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

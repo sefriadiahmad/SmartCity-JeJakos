@@ -15,6 +15,9 @@ router.get('/facilities', kosController.getFacilities);
 // GET /api/kos/nearby — pencarian geospasial
 router.get('/nearby', auth.optional, kosController.nearbyKos);
 
+// GET /api/kos/owner-dashboard — ringkasan pemilik kos
+router.get('/owner-dashboard', auth, rbac('pemilik', 'admin'), kosController.ownerDashboard);
+
 // GET /api/kos — list kos (public/filter/search)
 router.get('/', auth.optional, kosController.listKos);
 

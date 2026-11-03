@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { FiBookOpen, FiChevronRight, FiClipboard, FiGrid, FiHome, FiLayers, FiLogOut, FiMenu, FiMessageCircle, FiSearch, FiSettings, FiUsers, FiX } from 'react-icons/fi';
+import { FiBookOpen, FiChevronRight, FiClipboard, FiGrid, FiHome, FiLayers, FiLogOut, FiMenu, FiMessageCircle, FiPieChart, FiSearch, FiSettings, FiUsers, FiX } from 'react-icons/fi';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import { connectSocket, socket } from '../../services/socket';
@@ -22,15 +22,15 @@ export default function DashboardLayout() {
   const location = useLocation();
   const serverBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5001';
   const avatar = user?.photo_url ? (user.photo_url.startsWith('http') ? user.photo_url : `${serverBase}${user.photo_url}`) : null;
-  const home = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'pemilik' ? '/dashboard' : '/bookings';
+  const home = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'pemilik' ? '/dashboard/ringkasan' : '/bookings';
 
   const mainLinks = user?.role === 'admin'
     ? [{ to: '/admin/dashboard', label: 'Ringkasan', Icon: FiGrid }, { to: '/admin/users', label: 'Pengguna', Icon: FiUsers }, { to: '/admin/kos', label: 'Data Kos', Icon: FiHome }, { to: '/admin/rooms', label: 'Daftar Kamar', Icon: FiLayers }, { to: '/admin/reviews', label: 'Ulasan', Icon: FiBookOpen }]
     : user?.role === 'pemilik'
-      ? [{ to: '/dashboard', label: 'Kelola Kos', Icon: FiGrid }, { to: '/dashboard?tab=bookings', label: 'Pesanan Masuk', Icon: FiClipboard }, { to: '/dashboard?tab=invoices', label: 'Tagihan', Icon: FiBookOpen }]
+      ? [{ to: '/dashboard/ringkasan', label: 'Ringkasan', Icon: FiPieChart }, { to: '/dashboard', label: 'Kelola Kos', Icon: FiGrid }, { to: '/dashboard?tab=bookings', label: 'Pesanan Masuk', Icon: FiClipboard }, { to: '/dashboard?tab=invoices', label: 'Tagihan', Icon: FiBookOpen }]
       : [{ to: '/dashboard/search', label: 'Cari Kos', Icon: FiSearch }, { to: '/bookings', label: 'Pemesanan Saya', Icon: FiClipboard }, { to: '/invoices', label: 'Tagihan Saya', Icon: FiBookOpen }];
   const accountLinks = [{ to: '/conversations', label: 'Pesan', Icon: FiMessageCircle }, { to: '/profile', label: 'Profil Saya', Icon: FiSettings }];
-  const titleByPath = { '/bookings': 'Pemesanan Saya', '/dashboard/search': 'Cari Kos', '/invoices': 'Tagihan Saya', '/conversations': 'Pesan', '/profile': 'Profil Saya', '/dashboard': 'Kelola Kos', '/admin/dashboard': 'Ringkasan', '/admin/users': 'Kelola Pengguna', '/admin/kos': 'Data Kos', '/admin/rooms': 'Daftar Kamar', '/admin/reviews': 'Moderasi Ulasan' };
+  const titleByPath = { '/bookings': 'Pemesanan Saya', '/dashboard/search': 'Cari Kos', '/invoices': 'Tagihan Saya', '/conversations': 'Pesan', '/profile': 'Profil Saya', '/dashboard': 'Kelola Kos', '/dashboard/ringkasan': 'Ringkasan', '/admin/dashboard': 'Ringkasan', '/admin/users': 'Kelola Pengguna', '/admin/kos': 'Data Kos', '/admin/rooms': 'Daftar Kamar', '/admin/reviews': 'Moderasi Ulasan' };
   const pemilikTabTitles = { bookings: 'Pesanan Masuk', invoices: 'Tagihan Penghuni' };
   const tabParam = new URLSearchParams(location.search).get('tab');
   const title = (location.pathname === '/dashboard' && pemilikTabTitles[tabParam]) || titleByPath[location.pathname] || (location.pathname.startsWith('/admin') ? 'Panel Admin' : 'Dashboard');

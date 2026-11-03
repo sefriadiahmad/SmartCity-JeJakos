@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { FiAlertTriangle, FiHome, FiCamera, FiMapPin, FiLayers, FiEdit2, FiTrash2, FiPlus, FiClock, FiCheckCircle } from 'react-icons/fi';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -29,6 +30,11 @@ export default function PemilikDashboard() {
 
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedKosForPhotos, setSelectedKosForPhotos] = useState(null);
+
+  // Delete Confirmation Modal
+  const [kosToDelete, setKosToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const userId = user?.id;
 
@@ -78,15 +84,23 @@ export default function PemilikDashboard() {
     setKosModalOpen(true);
   };
 
-  const handleDeleteKos = async (kos) => {
-    if (!window.confirm(`Yakin ingin menghapus properti kos "${kos.name}"? Semua kamar dan foto terkait juga akan terhapus.`)) {
-      return;
-    }
+  const handleDeleteKos = (kos) => {
+    setKosToDelete(kos);
+    setDeleteError('');
+  };
+
+  const handleConfirmDeleteKos = async () => {
+    if (!kosToDelete) return;
+    setDeleteLoading(true);
+    setDeleteError('');
     try {
-      await api.delete(`/kos/${kos.id}`);
+      await api.delete(`/kos/${kosToDelete.id}`);
+      setKosToDelete(null);
       fetchMyKos();
     } catch (err) {
-      alert(err.response?.data?.error || 'Gagal menghapus kos');
+      setDeleteError(err.response?.data?.error || 'Gagal menghapus kos');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -100,6 +114,22 @@ export default function PemilikDashboard() {
     setPhotoModalOpen(true);
   };
 
+  // Register global callbacks for post-creation flow in KosFormModal
+  useEffect(() => {
+    window.__jejakos_openRooms = (kos) => {
+      setSelectedKosForRooms(kos);
+      setRoomModalOpen(true);
+    };
+    window.__jejakos_openPhotos = (kos) => {
+      setSelectedKosForPhotos(kos);
+      setPhotoModalOpen(true);
+    };
+    return () => {
+      delete window.__jejakos_openRooms;
+      delete window.__jejakos_openPhotos;
+    };
+  }, []);
+
   // Stat calculations
   const totalKos = kosList.length;
   const totalRooms = kosList.reduce((acc, k) => acc + (k.total_rooms || 0), 0);
@@ -112,7 +142,7 @@ export default function PemilikDashboard() {
         {/* Unapproved Notice Banner */}
         {user?.role === 'pemilik' && !user?.is_approved && (
           <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-xs">
-            <span className="text-xl">⚠️</span>
+            <FiAlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-xs leading-relaxed">
               <p className="font-bold text-sm">Akun Dalam Verifikasi Admin</p>
               <p className="mt-0.5">
@@ -139,7 +169,7 @@ export default function PemilikDashboard() {
               onClick={handleOpenCreateKos}
               className="px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-sm hover:shadow flex items-center gap-2 cursor-pointer"
             >
-              <span className="text-sm">+</span>
+              <FiPlus className="h-4 w-4" />
               <span>Tambah Kos Baru</span>
             </button>
           )}
@@ -204,8 +234,8 @@ export default function PemilikDashboard() {
                 </div>
               ) : kosList.length === 0 ? (
                 <div className="py-16 text-center bg-white rounded-3xl border border-dashed border-slate-300 p-8 space-y-4">
-                  <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 text-2xl flex items-center justify-center font-bold">
-                    🏠
+                  <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <FiHome className="h-8 w-8" />
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900">
@@ -244,7 +274,7 @@ export default function PemilikDashboard() {
                               />
                             ) : (
                               <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 text-xs">
-                                <span className="text-2xl mb-1">📷</span>
+                                <FiCamera className="h-6 w-6 mb-1" />
                                 <span>Belum ada foto</span>
                               </div>
                             )}
@@ -272,7 +302,7 @@ export default function PemilikDashboard() {
                                     : 'bg-amber-100 text-amber-800'
                                 }`}
                               >
-                                {kos.is_approved ? '✓ Terverifikasi' : '⏳ Menunggu Approval'}
+                                {kos.is_approved ? '✓ Terverifikasi' : 'Menunggu Approval'}
                               </span>
                             </div>
 
@@ -296,8 +326,8 @@ export default function PemilikDashboard() {
                               <h3 className="text-base font-bold text-slate-900 line-clamp-1">
                                 {kos.name}
                               </h3>
-                              <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
-                                📍 {kos.district ? `${kos.district}, ` : ''}{kos.address}
+                              <p className="text-xs text-slate-500 line-clamp-1 mt-0.5 flex items-center gap-1">
+                                <FiMapPin className="h-3 w-3 shrink-0" /> {kos.district ? `${kos.district}, ` : ''}{kos.address}
                               </p>
                             </div>
 
@@ -349,14 +379,14 @@ export default function PemilikDashboard() {
                               onClick={() => handleOpenRooms(kos)}
                               className="px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition cursor-pointer"
                             >
-                              🚪 Kelola Kamar ({kos.total_rooms || 0})
+                              <FiLayers className="inline h-3.5 w-3.5 -mt-0.5" /> Kelola Kamar ({kos.total_rooms || 0})
                             </button>
                             <button
                               type="button"
                               onClick={() => handleOpenPhotos(kos)}
                               className="px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition cursor-pointer"
                             >
-                              📷 Galeri ({kos.photos?.length || 0})
+                              <FiCamera className="inline h-3.5 w-3.5 -mt-0.5" /> Galeri ({kos.photos?.length || 0})
                             </button>
                           </div>
 
@@ -366,14 +396,14 @@ export default function PemilikDashboard() {
                               onClick={() => handleOpenEditKos(kos)}
                               className="px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition cursor-pointer"
                             >
-                              Edit
+                              <FiEdit2 className="inline h-3.5 w-3.5 -mt-0.5" /> Edit
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDeleteKos(kos)}
                               className="px-2.5 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 rounded-lg hover:bg-red-50 transition cursor-pointer"
                             >
-                              Hapus
+                              <FiTrash2 className="inline h-3.5 w-3.5 -mt-0.5" /> Hapus
                             </button>
                           </div>
                         </div>
@@ -416,6 +446,70 @@ export default function PemilikDashboard() {
           kos={selectedKosForPhotos}
           onPhotosUpdated={() => fetchMyKos()}
         />
+      )}
+
+      {/* Delete Confirmation Floating Modal */}
+      {kosToDelete && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !deleteLoading) {
+              setKosToDelete(null);
+              setDeleteError('');
+            }
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 p-6 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0">
+                <FiTrash2 className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-bold text-slate-900">
+                  Hapus Properti Kos
+                </h3>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  Yakin ingin menghapus properti kos <strong className="text-slate-900">"{kosToDelete.name}"</strong>? Semua kamar dan foto terkait juga akan terhapus.
+                </p>
+              </div>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 text-xs bg-rose-50 text-rose-700 border border-rose-200 rounded-xl">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setKosToDelete(null);
+                  setDeleteError('');
+                }}
+                disabled={deleteLoading}
+                className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteKos}
+                disabled={deleteLoading}
+                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition shadow-xs disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+              >
+                {deleteLoading ? (
+                  'Menghapus...'
+                ) : (
+                  <>
+                    <FiTrash2 className="h-3.5 w-3.5" />
+                    <span>Hapus Properti</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

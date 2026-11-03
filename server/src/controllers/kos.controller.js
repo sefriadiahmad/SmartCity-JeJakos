@@ -447,6 +447,106 @@ const KosController = {
       next(err);
     }
   },
+
+  // GET /api/kos/owner-dashboard — ringkasan dashboard pemilik kos
+  async ownerDashboard(req, res, next) {
+    const db = require('../config/db');
+    const ownerId = req.user.id;
+
+    try {
+      // Aggregate stats
+      const [[{ totalKos }]] = await db.execute('SELECT COUNT(*) AS totalKos FROM kos WHERE owner_id = ?', [ownerId]);
+      const [[{ totalRooms }]] = await db.execute(
+        'SELECT COUNT(*) AS totalRooms FROM rooms r JOIN kos k ON r.kos_id = k.id WHERE k.owner_id = ?', [ownerId]
+      );
+      const [[{ availableRooms }]] = await db.execute(
+        'SELECT COUNT(*) AS availableRooms FROM rooms r JOIN kos k ON r.kos_id = k.id WHERE k.owner_id = ? AND r.is_available = 1', [ownerId]
+      );
+
+      // Booking stats
+      const [bookingsByStatus] = await db.execute(
+        `SELECT b.status, COUNT(*) AS count FROM bookings b
+         JOIN rooms r ON b.room_id = r.id JOIN kos k ON r.kos_id = k.id
+         WHERE k.owner_id = ? GROUP BY b.status`, [ownerId]
+      );
+
+      // Invoice stats
+      const [invoicesByStatus] = await db.execute(
+        `SELECT i.status, COUNT(*) AS count, COALESCE(SUM(i.amount), 0) AS total_amount FROM invoices i
+         JOIN bookings b ON i.booking_id = b.id JOIN rooms r ON b.room_id = r.id JOIN kos k ON r.kos_id = k.id
+         WHERE k.owner_id = ? GROUP BY i.status`, [ownerId]
+      );
+
+      // Revenue: total paid
+      const [[{ totalRevenue }]] = await db.execute(
+        `SELECT COALESCE(SUM(i.amount), 0) AS totalRevenue FROM invoices i
+         JOIN bookings b ON i.booking_id = b.id JOIN rooms r ON b.room_id = r.id JOIN kos k ON r.kos_id = k.id
+         WHERE k.owner_id = ? AND i.status = 'paid'`, [ownerId]
+      );
+
+      // Monthly revenue (6 months)
+      const [monthlyRevenue] = await db.execute(
+        `SELECT DATE_FORMAT(i.paid_at, '%Y-%m') AS month, SUM(i.amount) AS revenue, COUNT(*) AS count
+         FROM invoices i JOIN bookings b ON i.booking_id = b.id JOIN rooms r ON b.room_id = r.id JOIN kos k ON r.kos_id = k.id
+         WHERE k.owner_id = ? AND i.status = 'paid' AND i.paid_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+         GROUP BY month ORDER BY month`, [ownerId]
+      );
+
+      // Monthly bookings (6 months)
+      const [monthlyBookings] = await db.execute(
+        `SELECT DATE_FORMAT(b.created_at, '%Y-%m') AS month, COUNT(*) AS count
+         FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN kos k ON r.kos_id = k.id
+         WHERE k.owner_id = ? AND b.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+         GROUP BY month ORDER BY month`, [ownerId]
+      );
+
+      // Latest 5 bookings
+      const [latestBookings] = await db.execute(
+        `SELECT b.id, b.status, b.check_in_date, b.created_at,
+                u.name AS tenant_name, k.name AS kos_name, r.room_number
+         FROM bookings b
+         JOIN rooms r ON b.room_id = r.id JOIN kos k ON r.kos_id = k.id
+         LEFT JOIN users u ON b.tenant_id = u.id
+         WHERE k.owner_id = ? ORDER BY b.created_at DESC LIMIT 5`, [ownerId]
+      );
+
+      // Latest 5 invoices
+      const [latestInvoices] = await db.execute(
+        `SELECT i.id, i.amount, i.due_date, i.status, i.paid_at,
+                u.name AS tenant_name, k.name AS kos_name, r.room_number
+         FROM invoices i
+         JOIN bookings b ON i.booking_id = b.id JOIN rooms r ON b.room_id = r.id JOIN kos k ON r.kos_id = k.id
+         LEFT JOIN users u ON b.tenant_id = u.id
+         WHERE k.owner_id = ? ORDER BY i.created_at DESC LIMIT 5`, [ownerId]
+      );
+
+      // Occupancy per kos
+      const [kosOccupancy] = await db.execute(
+        `SELECT k.id, k.name,
+                COUNT(r.id) AS total_rooms,
+                SUM(CASE WHEN r.is_available = 1 THEN 1 ELSE 0 END) AS available_rooms
+         FROM kos k LEFT JOIN rooms r ON r.kos_id = k.id
+         WHERE k.owner_id = ? GROUP BY k.id ORDER BY k.name`, [ownerId]
+      );
+
+      res.json({
+        totalKos: Number(totalKos),
+        totalRooms: Number(totalRooms),
+        availableRooms: Number(availableRooms),
+        occupiedRooms: Number(totalRooms) - Number(availableRooms),
+        totalRevenue: Number(totalRevenue),
+        bookingsByStatus,
+        invoicesByStatus,
+        monthlyRevenue,
+        monthlyBookings,
+        latestBookings,
+        latestInvoices,
+        kosOccupancy,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 module.exports = KosController;
