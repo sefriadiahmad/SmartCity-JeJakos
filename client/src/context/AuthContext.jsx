@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { AuthContext } from './auth';
+import { connectSocket, disconnectSocket } from '../services/socket';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -21,8 +22,10 @@ export function AuthProvider({ children }) {
         if (res.data?.user) {
           setUser(res.data.user);
           localStorage.setItem('user', JSON.stringify(res.data.user));
+          connectSocket(true);
         }
       } catch {
+        disconnectSocket();
         localStorage.removeItem('user');
         setUser(null);
       }
@@ -32,12 +35,23 @@ export function AuthProvider({ children }) {
     initAuth();
   }, []);
 
+  // Monitor user changes to keep socket session strictly in sync
+  useEffect(() => {
+    if (user?.id) {
+      connectSocket(true);
+    } else {
+      disconnectSocket();
+    }
+  }, [user?.id]);
+
   const login = async (email, password) => {
+    disconnectSocket();
     const res = await api.post('/auth/login', { email, password });
     const { user: userData } = res.data;
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
+      connectSocket(true);
     }
     return res.data;
   };
@@ -49,10 +63,12 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
+      disconnectSocket();
       await api.post('/auth/logout');
     } catch {
       // Ignore network errors on logout
     } finally {
+      disconnectSocket();
       localStorage.removeItem('user');
       setUser(null);
     }

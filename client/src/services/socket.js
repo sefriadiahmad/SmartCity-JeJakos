@@ -9,7 +9,10 @@ export const socket = io(SOCKET_URL, {
   transports: ['websocket', 'polling'],
 });
 
-export function connectSocket() {
+export function connectSocket(force = false) {
+  if (force && socket.connected) {
+    socket.disconnect();
+  }
   if (!socket.connected) {
     socket.connect();
   }

@@ -26,12 +26,16 @@ export default function ChatWindow({
   const [error, setError] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
 
   const scrollToBottom = useCallback((smooth = true) => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: smooth ? 'smooth' : 'auto',
-    });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto',
+      });
+    }
   }, []);
 
   // 1. Fetch Conversation and Messages
@@ -74,7 +78,7 @@ export default function ChatWindow({
       active = false;
       leaveConversation(conversationId);
     };
-  }, [conversationId, scrollToBottom, onMessageSent]);
+  }, [conversationId, currentUserId, scrollToBottom, onMessageSent]);
 
   // 2. Real-time Socket Listener for newMessage and messageRead
   useEffect(() => {
@@ -214,7 +218,7 @@ export default function ChatWindow({
   const kosData = conversation?.kos;
 
   return (
-    <div className="flex-1 h-full flex flex-col bg-slate-50 overflow-hidden relative">
+    <div className="flex-1 h-full min-h-0 flex flex-col bg-slate-50 overflow-hidden relative">
       {/* Header */}
       <div className="bg-white px-4 py-3 border-b border-slate-200 shrink-0 flex items-center justify-between shadow-2xs z-10">
         <div className="flex items-center gap-3 min-w-0">
@@ -300,7 +304,7 @@ export default function ChatWindow({
       )}
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
             <FiMessageCircle className="w-12 h-12 mb-2 text-slate-300" />

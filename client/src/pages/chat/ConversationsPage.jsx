@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { FiMessageCircle, FiSearch, FiInbox, FiHome, FiMessageSquare } from 'react-icons/fi';
 import api from '../../services/api';
@@ -19,10 +19,21 @@ export default function ConversationsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Clear selected conversation if user switches
+  const prevUserIdRef = useRef(user?.id);
+  useEffect(() => {
+    if (prevUserIdRef.current && prevUserIdRef.current !== user?.id) {
+      setSearchParams({});
+    }
+    prevUserIdRef.current = user?.id;
+  }, [user?.id, setSearchParams]);
+
   // 1. Initialize Socket Connection for authenticated user
   useEffect(() => {
-    connectSocket();
-  }, []);
+    if (user?.id) {
+      connectSocket();
+    }
+  }, [user?.id]);
 
   // 2. Fetch Conversations List
   const fetchConversations = useCallback(async () => {
@@ -55,7 +66,7 @@ export default function ConversationsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user?.id]);
 
   const handleSelectConversation = (id) => {
     setSearchParams({ id });
@@ -118,22 +129,22 @@ export default function ConversationsPage() {
   });
 
   return (
-    <div className="flex-1 flex flex-col max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8">
+    <div className="h-[calc(100dvh-4rem)] md:h-[calc(100dvh-5rem)] flex flex-col max-w-7xl w-full mx-auto p-2.5 sm:p-4 lg:p-6 overflow-hidden">
       {/* Page Header */}
-      <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      <div className="mb-2.5 sm:mb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shrink-0">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-            <FiMessageCircle className="w-6 h-6 text-emerald-600" />
+          <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            <FiMessageCircle className="w-5 h-5 text-emerald-600" />
             <span>Percakapan Langsung</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Tanya jawab real-time antara pencari dan pemilik kos di JeJakos
           </p>
         </div>
 
         <Link
           to="/kos"
-          className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 transition inline-flex items-center gap-1.5"
+          className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 transition inline-flex items-center gap-1.5 shrink-0"
         >
           <FiSearch className="w-3.5 h-3.5" />
           <span>Jelajahi Kos Lainnya</span>
@@ -141,15 +152,15 @@ export default function ConversationsPage() {
       </div>
 
       {/* Main Chat Panel Container */}
-      <div className="flex-1 bg-white rounded-2xl border border-slate-200/90 shadow-sm flex overflow-hidden h-[calc(100dvh-10rem)] min-h-[400px] md:h-auto md:min-h-[550px] max-h-[750px]">
+      <div className="flex-1 min-h-0 bg-white rounded-2xl border border-slate-200/90 shadow-xs flex overflow-hidden">
         {/* Left Column: Conversations Sidebar */}
         <div
-          className={`w-full md:w-80 lg:w-96 border-r border-slate-200 flex flex-col shrink-0 ${
+          className={`w-full md:w-80 lg:w-96 border-r border-slate-200 flex flex-col h-full min-h-0 shrink-0 ${
             selectedId ? 'hidden md:flex' : 'flex'
           }`}
         >
           {/* Search Box */}
-          <div className="p-3 border-b border-slate-100 bg-slate-50/50">
+          <div className="p-3 border-b border-slate-100 bg-slate-50/50 shrink-0">
             <div className="relative">
               <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">
                 <FiSearch className="w-3.5 h-3.5" />
@@ -165,7 +176,7 @@ export default function ConversationsPage() {
           </div>
 
           {/* List of Conversations */}
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100">
             {loading ? (
               <div className="p-8 text-center text-slate-400 flex flex-col items-center">
                 <div className="animate-spin rounded-full h-6 w-6 border-2 border-emerald-600 border-t-transparent mb-2" />
@@ -268,7 +279,7 @@ export default function ConversationsPage() {
 
         {/* Right Column: Chat Window or Empty State */}
         <div
-          className={`flex-1 h-full flex flex-col ${
+          className={`flex-1 h-full min-h-0 flex flex-col ${
             selectedId ? 'flex' : 'hidden md:flex'
           }`}
         >
