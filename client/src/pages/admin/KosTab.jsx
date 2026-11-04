@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCheck, FiX, FiSearch, FiHome, FiClock, FiEye } from 'react-icons/fi';
+import { FiCheck, FiX, FiSearch, FiHome, FiClock, FiEye, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
@@ -18,11 +18,20 @@ export default function KosTab() {
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
+  const [confirmTarget, setConfirmTarget] = useState(null);
 
   const showFeedback = (type, message) => {
     setFeedback({ type, message });
     setTimeout(() => setFeedback({ type: '', message: '' }), 4000);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && !actionLoadingId) setConfirmTarget(null);
+    };
+    if (confirmTarget) window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [confirmTarget, actionLoadingId]);
 
   useEffect(() => {
     let active = true;
@@ -51,19 +60,21 @@ export default function KosTab() {
     return () => { active = false; };
   }, [page, search, approvalFilter, typeFilter, statusFilter, refreshKey]);
 
-  const handleToggleApproval = async (kos) => {
-    const nextApproved = !kos.is_approved;
-    const confirmMsg = nextApproved
-      ? `Setujui listing kos "${kos.name}"? Kos akan muncul dalam pencarian publik pencari kos.`
-      : `Batalkan persetujuan / sembunyikan listing kos "${kos.name}" dari publik?`;
+  const handleToggleApproval = (kos) => {
+    setConfirmTarget(kos);
+  };
 
-    if (!window.confirm(confirmMsg)) return;
+  const handleConfirmAction = async () => {
+    if (!confirmTarget) return;
+    const kos = confirmTarget;
+    const nextApproved = !kos.is_approved;
 
     setActionLoadingId(kos.id);
     try {
       const res = await api.put(`/admin/kos/${kos.id}/approve`, { is_approved: nextApproved });
       showFeedback('success', res.data?.message || 'Status persetujuan kos berhasil diperbarui');
       setRefreshKey((k) => k + 1);
+      setConfirmTarget(null);
     } catch (err) {
       showFeedback('error', err.response?.data?.error || 'Gagal mengubah status persetujuan kos');
     } finally {
@@ -208,6 +219,80 @@ export default function KosTab() {
             </div>
           )}
         </div>
+
+        {/* Floating Modal Konfirmasi Persetujuan Kos */}
+        {confirmTarget && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !actionLoadingId) setConfirmTarget(null);
+            }}
+          >
+            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-6 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2.5 rounded-xl shrink-0 ${confirmTarget.is_approved ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                    {confirmTarget.is_approved ? <FiAlertTriangle className="w-5 h-5" /> : <FiCheckCircle className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      {confirmTarget.is_approved ? 'Tolak / Batalkan Persetujuan' : 'Setujui Listing Kos'}
+                    </h3>
+                    <p className="text-xs text-slate-500">Konfirmasi publikasi properti kos</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={!!actionLoadingId}
+                  onClick={() => setConfirmTarget(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer disabled:opacity-50"
+                  aria-label="Tutup"
+                >
+                  <FiX className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                {confirmTarget.is_approved ? (
+                  <p>
+                    Apakah Anda yakin ingin membatalkan persetujuan dan menyembunyikan listing kos <span className="font-bold text-slate-900">{confirmTarget.name}</span> dari publik? Kos tidak akan muncul di hasil pencarian pencari kos.
+                  </p>
+                ) : (
+                  <p>
+                    Apakah Anda yakin ingin menyetujui listing kos <span className="font-bold text-slate-900">{confirmTarget.name}</span>? Kos akan langsung terverifikasi dan muncul di pencarian publik pencari kos.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  disabled={!!actionLoadingId}
+                  onClick={() => setConfirmTarget(null)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={!!actionLoadingId}
+                  onClick={handleConfirmAction}
+                  className={`px-4 py-2 text-xs font-bold text-white rounded-xl transition shadow-xs cursor-pointer disabled:opacity-50 ${
+                    confirmTarget.is_approved
+                      ? 'bg-amber-600 hover:bg-amber-700'
+                      : 'bg-emerald-600 hover:bg-emerald-700'
+                  }`}
+                >
+                  {actionLoadingId === confirmTarget.id
+                    ? 'Memproses...'
+                    : confirmTarget.is_approved
+                    ? 'Ya, Batalkan Listing'
+                    : 'Ya, Setujui Listing'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
