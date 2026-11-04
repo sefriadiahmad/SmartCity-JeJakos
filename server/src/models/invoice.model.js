@@ -331,6 +331,69 @@ const InvoiceModel = {
   },
 
   /**
+   * Ensure initial invoice exists for an accepted or active booking (F-31)
+   */
+  async ensureInitialInvoice(bookingId) {
+    if (!bookingId) return null;
+
+    const [existing] = await db.execute(
+      `SELECT id, amount, due_date, status FROM invoices WHERE booking_id = ? LIMIT 1`,
+      [bookingId]
+    );
+
+    if (existing && existing.length > 0) {
+      return existing[0].id;
+    }
+
+    const [bookingRows] = await db.execute(
+      `SELECT b.id, b.room_id, b.tenant_id, b.check_in_date, b.status, r.price AS room_price
+       FROM bookings b
+       JOIN rooms r ON b.room_id = r.id
+       WHERE b.id = ?`,
+      [bookingId]
+    );
+
+    if (!bookingRows || bookingRows.length === 0) return null;
+    const b = bookingRows[0];
+
+    const amount = parseFloat(b.room_price) || 0;
+    const dueDate = formatDate(b.check_in_date) || new Date().toISOString().split('T')[0];
+
+    return await this.create({
+      booking_id: b.id,
+      amount,
+      due_date: dueDate,
+      status: 'unpaid',
+    });
+  },
+
+  /**
+   * Sync all accepted/active bookings that are missing initial invoices
+   */
+  async syncMissingInvoices() {
+    const [missingBookings] = await db.execute(
+      `SELECT b.id AS booking_id, b.check_in_date, r.price AS room_price
+       FROM bookings b
+       JOIN rooms r ON b.room_id = r.id
+       WHERE b.status IN ('accepted', 'active')
+         AND NOT EXISTS (
+           SELECT 1 FROM invoices i WHERE i.booking_id = b.id
+         )`
+    );
+
+    for (const b of missingBookings) {
+      const amount = parseFloat(b.room_price) || 0;
+      const dueDate = formatDate(b.check_in_date) || new Date().toISOString().split('T')[0];
+      await this.create({
+        booking_id: b.booking_id,
+        amount,
+        due_date: dueDate,
+        status: 'unpaid',
+      });
+    }
+  },
+
+  /**
    * Auto-generate recurring invoices according to pay_period (F-31)
    */
   async generateRecurringInvoices({ issueDaysBefore = 7 } = {}) {

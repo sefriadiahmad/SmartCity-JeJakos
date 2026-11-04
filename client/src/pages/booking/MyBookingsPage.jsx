@@ -10,6 +10,7 @@ import {
   FiSearch,
   FiMapPin,
   FiMessageCircle,
+  FiCreditCard,
 } from 'react-icons/fi';
 import { FaBed } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
@@ -415,6 +416,16 @@ export default function MyBookingsPage() {
 
                   {/* Actions column */}
                   <div className="w-full md:w-44 flex flex-col gap-2 shrink-0 pt-2 md:pt-0">
+                    {b.status === 'accepted' && (
+                      <Link
+                        to="/invoices"
+                        className="w-full py-2.5 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 text-center cursor-pointer"
+                      >
+                        <FiCreditCard className="w-3.5 h-3.5" />
+                        <span>Bayar Tagihan</span>
+                      </Link>
+                    )}
+
                     <button
                       type="button"
                       onClick={() => setSelectedBooking(b)}

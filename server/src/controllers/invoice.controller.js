@@ -9,6 +9,13 @@ const InvoiceController = {
    */
   async listInvoices(req, res, next) {
     try {
+      // Auto-sync any accepted or active bookings missing initial invoice
+      try {
+        await InvoiceModel.syncMissingInvoices();
+      } catch (syncErr) {
+        console.error('[Invoice] Auto-sync missing invoices error:', syncErr);
+      }
+
       const {
         status,
         booking_id,
@@ -115,6 +122,69 @@ const InvoiceController = {
         invoice_id: invoice.id,
         amount: invoice.amount,
         ...snapData,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /api/invoices/:id/simulate-pay — [pencari, admin] simulasi bayar lunas langsung (mode mock/sandbox)
+   */
+  async simulatePayment(req, res, next) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'ID tagihan tidak valid' });
+      }
+
+      const invoice = await InvoiceModel.findById(id);
+      if (!invoice) {
+        return res.status(404).json({ error: 'Tagihan tidak ditemukan' });
+      }
+
+      const isAdmin = req.user.role === 'admin';
+      const isTenant = req.user.id === invoice.tenant.id;
+
+      if (!isAdmin && !isTenant) {
+        return res.status(403).json({
+          error: 'Akses ditolak. Hanya penyewa terkait yang dapat membayar tagihan ini',
+        });
+      }
+
+      if (invoice.status === 'paid') {
+        return res.status(400).json({
+          error: 'Tagihan ini sudah lunas',
+        });
+      }
+
+      const { payment_method = 'qris' } = req.body;
+      const ref = `SIM-${payment_method.toUpperCase()}-${Date.now()}`;
+      const paidAt = new Date();
+
+      await InvoiceModel.updateStatus(invoice.id, {
+        status: 'paid',
+        payment_method,
+        payment_ref: ref,
+        paid_at: paidAt,
+      });
+
+      // Update associated booking to active
+      if (invoice.booking_id) {
+        const booking = await BookingModel.findById(invoice.booking_id);
+        if (booking && (booking.status === 'accepted' || booking.status === 'pending')) {
+          await BookingModel.recordActiveTenant(
+            booking.id,
+            `Pembayaran sewa lunas via Simulasi (${payment_method.toUpperCase()})`
+          );
+        }
+      }
+
+      const updated = await InvoiceModel.findById(invoice.id);
+
+      res.json({
+        message: 'Pembayaran berhasil disimulasikan lunas! Tagihan telah lunas.',
+        invoice: updated,
       });
     } catch (err) {
       next(err);

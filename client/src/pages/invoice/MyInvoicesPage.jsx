@@ -162,10 +162,10 @@ export default function MyInvoicesPage() {
     setPayingId(invoice.id);
     try {
       const res = await api.post(`/invoices/${invoice.id}/pay`);
-      const { redirect_url, token, order_id, amount } = res.data;
+      const { redirect_url, token, order_id, amount, is_mock } = res.data;
 
-      // Automatically open Midtrans QRIS payment gateway
-      if (redirect_url) {
+      // Automatically open Midtrans QRIS payment gateway only when not in mock mode
+      if (redirect_url && !is_mock) {
         window.open(redirect_url, '_blank', 'noopener,noreferrer');
       }
 
@@ -176,6 +176,7 @@ export default function MyInvoicesPage() {
         token,
         order_id,
         amount,
+        is_mock,
       });
     } catch (err) {
       alert(err.response?.data?.error || 'Gagal menyiapkan pembayaran');

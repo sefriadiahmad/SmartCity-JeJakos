@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FiClock, FiCheckCircle, FiHome, FiFlag, FiXCircle, FiSlash, FiX, FiMapPin, FiMessageCircle } from 'react-icons/fi';
+import { FiClock, FiCheckCircle, FiHome, FiFlag, FiXCircle, FiSlash, FiX, FiMapPin, FiMessageCircle, FiCreditCard } from 'react-icons/fi';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
 import api from '../../services/api';
@@ -266,6 +266,29 @@ export default function BookingDetailModal({
             </div>
           </div>
         </div>
+
+        {/* Accepted Payment Callout */}
+        {booking.status === 'accepted' && (
+          <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-2 text-xs">
+            <div className="flex items-center gap-2 text-emerald-900 font-bold">
+              <FiCheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Pesanan Disetujui — Menunggu Pembayaran</span>
+            </div>
+            <p className="text-[11px] text-emerald-800 leading-relaxed">
+              Pemilik telah menyetujui pesanan Anda. Segera lakukan pembayaran tagihan sewa pertama untuk mengaktifkan status penghuni kamar ini.
+            </p>
+            <div className="pt-1">
+              <Link
+                to="/invoices"
+                onClick={onClose}
+                className="inline-flex items-center gap-2 py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-xs cursor-pointer"
+              >
+                <FiCreditCard className="w-3.5 h-3.5" />
+                <span>Buka Menu Tagihan & Bayar Sekarang</span>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Cancellation Section */}
         {showConfirmCancel ? (

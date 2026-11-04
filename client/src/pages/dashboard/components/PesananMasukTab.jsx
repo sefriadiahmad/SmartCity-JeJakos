@@ -184,7 +184,7 @@ export default function PesananMasukTab({ onStatsUpdated }) {
 
       setActionFeedback({
         type: 'success',
-        text: `Pesanan #${booking.id} dari ${booking.tenant?.name || 'Calon Penghuni'} berhasil DITERIMA.`,
+        text: `Pesanan #${booking.id} dari ${booking.tenant?.name || 'Calon Penghuni'} berhasil DITERIMA. Tagihan sewa pertama otomatis tercatat di menu Tagihan.`,
       });
     } catch (err) {
       setActionFeedback({

@@ -1,5 +1,6 @@
 const BookingModel = require('../models/booking.model');
 const RoomModel = require('../models/room.model');
+const InvoiceModel = require('../models/invoice.model');
 
 const BookingController = {
   /**
@@ -255,6 +256,15 @@ const BookingController = {
 
       if (!updateResult.success) {
         return res.status(400).json({ error: updateResult.error });
+      }
+
+      // Automatically generate initial invoice when booking is approved/accepted or active
+      if (status === 'accepted' || status === 'active') {
+        try {
+          await InvoiceModel.ensureInitialInvoice(booking.id);
+        } catch (invErr) {
+          console.error('[Booking] Gagal membuat tagihan awal otomatis:', invErr);
+        }
       }
 
       const updated = await BookingModel.findById(booking.id);

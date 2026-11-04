@@ -23,6 +23,9 @@ router.get('/:id', invoiceController.getInvoiceById);
 // POST /api/invoices/:id/pay — [pencari, admin] siapkan pembayaran via Midtrans QRIS (F-32)
 router.post('/:id/pay', invoiceController.payInvoice);
 
+// POST /api/invoices/:id/simulate-pay — [pencari, admin] simulasi bayar lunas langsung (mode mock/sandbox)
+router.post('/:id/simulate-pay', invoiceController.simulatePayment);
+
 // POST /api/invoices/:id/manual — [pemilik, admin] catat bayar manual (F-33)
 router.post('/:id/manual', rbac('pemilik', 'admin'), invoiceController.recordManualPayment);
 

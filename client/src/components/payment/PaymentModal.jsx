@@ -8,6 +8,7 @@ import {
   FiRefreshCw,
   FiZap,
 } from 'react-icons/fi';
+import { BsQrCode } from 'react-icons/bs';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
 
@@ -16,15 +17,17 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
   const [simulating, setSimulating] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState('unpaid');
   const [statusMessage, setStatusMessage] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState('qris');
 
   const invoice = paymentData?.invoice;
   const redirectUrl = paymentData?.redirect_url;
   const orderId = paymentData?.order_id;
   const amount = paymentData?.amount || invoice?.amount;
+  const isMock = Boolean(paymentData?.is_mock || !redirectUrl);
 
-  // Direct open Midtrans gateway
+  // Direct open Midtrans gateway (only for real gateway)
   const handleOpenGateway = () => {
-    if (redirectUrl) {
+    if (redirectUrl && !isMock) {
       window.open(redirectUrl, '_blank', 'noopener,noreferrer');
     }
   };
@@ -45,7 +48,7 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
           onPaymentSuccess(latestInvoice);
         }
       } else {
-        setStatusMessage('Pembayaran belum diterima. Silakan selesaikan pembayaran via QRIS.');
+        setStatusMessage('Pembayaran belum diterima. Silakan selesaikan pembayaran.');
       }
     } catch {
       setStatusMessage('Gagal memeriksa status pembayaran. Silakan coba lagi.');
@@ -56,31 +59,42 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
 
   // Sandbox simulation helper for demonstration & testing
   const handleSimulatePayment = async () => {
-    if (!orderId && !invoice?.id) return;
+    if (!invoice?.id) return;
     setSimulating(true);
     setStatusMessage('');
     try {
-      const currentOrderId = orderId || `INV-${invoice.id}-${Date.now()}`;
-      await api.post('/payments/callback', {
-        order_id: currentOrderId,
-        status_code: '200',
-        gross_amount: String(amount || invoice.amount),
-        transaction_status: 'settlement',
-        payment_type: 'qris',
-        transaction_id: `mock-trx-${Date.now()}`,
-        settlement_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      const res = await api.post(`/invoices/${invoice.id}/simulate-pay`, {
+        payment_method: selectedMethod,
       });
 
       setPaymentStatus('paid');
-      setStatusMessage('Simulasi pembayaran sandbox berhasil! Tagihan otomatis tercatat lunas.');
+      setStatusMessage('Pembayaran simulasi berhasil! Tagihan otomatis tercatat lunas dan status sewa aktif.');
 
-      // Refresh invoice
-      const res = await api.get(`/invoices/${invoice.id}`);
       if (onPaymentSuccess && res.data?.invoice) {
         onPaymentSuccess(res.data.invoice);
       }
-    } catch (err) {
-      setStatusMessage(err.response?.data?.error || 'Gagal menjalankan simulasi pembayaran');
+    } catch {
+      // Fallback to webhook callback if simulate-pay route has issue
+      try {
+        const currentOrderId = orderId || `INV-${invoice.id}-${Date.now()}`;
+        await api.post('/payments/callback', {
+          order_id: currentOrderId,
+          status_code: '200',
+          gross_amount: String(amount || invoice.amount),
+          transaction_status: 'settlement',
+          payment_type: selectedMethod,
+          transaction_id: `mock-trx-${Date.now()}`,
+          settlement_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        });
+        setPaymentStatus('paid');
+        setStatusMessage('Pembayaran sandbox berhasil dikonfirmasi lunas!');
+        const fresh = await api.get(`/invoices/${invoice.id}`);
+        if (onPaymentSuccess && fresh.data?.invoice) {
+          onPaymentSuccess(fresh.data.invoice);
+        }
+      } catch (innerErr) {
+        setStatusMessage(innerErr.response?.data?.error || 'Gagal memproses pembayaran simulasi');
+      }
     } finally {
       setSimulating(false);
     }
@@ -99,7 +113,9 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
               <h3 className="font-bold text-base text-slate-900">
                 Pembayaran Tagihan Sewa
               </h3>
-              <p className="text-xs text-slate-500">Gateway Midtrans Sandbox (QRIS)</p>
+              <p className="text-xs text-slate-500">
+                {isMock ? 'Simulasi Gateway QRIS (Sandbox Demo)' : 'Midtrans Gateway (QRIS)'}
+              </p>
             </div>
           </div>
           <button
@@ -121,7 +137,7 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
             <div className="space-y-1">
               <h4 className="text-lg font-extrabold text-slate-900">Pembayaran Berhasil!</h4>
               <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
-                {statusMessage || 'Tagihan sewa kamar Anda telah lunas terbayar via QRIS.'}
+                {statusMessage || 'Tagihan sewa kamar Anda telah lunas terbayar.'}
               </p>
             </div>
 
@@ -134,7 +150,7 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Metode</span>
-                <span className="font-bold text-slate-800 uppercase">QRIS / E-Wallet</span>
+                <span className="font-bold text-slate-800 uppercase">{selectedMethod}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Status</span>
@@ -166,30 +182,60 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
               </span>
             </div>
 
-            {/* QRIS & Payment Methods Badges */}
+            {/* Method Tabs */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-bold text-slate-500 block">
-                Metode Pembayaran yang Didukung:
+              <span className="text-[11px] font-bold text-slate-600 block">
+                Pilih Metode Pembayaran:
               </span>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="grid grid-cols-3 gap-1.5 text-xs">
                 {[
-                  'QRIS (Semua E-Wallet & M-Banking)',
-                  'GoPay',
-                  'ShopeePay',
-                  'BCA VA',
-                  'BNI VA',
-                  'BRI VA',
-                  'Mandiri',
-                ].map((method) => (
-                  <span
-                    key={method}
-                    className="text-[10px] font-semibold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md border border-slate-200/60"
+                  { id: 'qris', label: 'QRIS' },
+                  { id: 'gopay', label: 'GoPay' },
+                  { id: 'transfer', label: 'Transfer' },
+                ].map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setSelectedMethod(m.id)}
+                    className={`py-2 px-2 rounded-xl font-bold border transition text-center cursor-pointer ${
+                      selectedMethod === m.id
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
                   >
-                    {method}
-                  </span>
+                    {m.label}
+                  </button>
                 ))}
               </div>
             </div>
+
+            {/* QRIS / Mock Visual Card */}
+            {selectedMethod === 'qris' && (
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-2">
+                <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl border border-slate-200 shadow-xs">
+                  <BsQrCode className="w-24 h-24 text-slate-900" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800">QRIS JeJakos Standar</p>
+                  <p className="text-[10px] text-slate-500">
+                    Bisa dipindai dengan BCA Mobile, Livin, GoPay, OVO, ShopeePay, DANA
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {selectedMethod !== 'qris' && (
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5 text-xs text-slate-700">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Nomor Rekening / VA:</span>
+                  <span className="font-mono font-bold text-slate-900">8801 0812 3456 7890</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Atas Nama:</span>
+                  <span className="font-semibold text-slate-800">JeJakos Jambi ({invoice?.kos?.name})</span>
+                </div>
+              </div>
+            )}
 
             {/* Status message notice */}
             {statusMessage && (
@@ -205,45 +251,43 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
             )}
 
             {/* Action Buttons */}
-            <div className="space-y-2 pt-2">
+            <div className="space-y-2 pt-1">
+              {!isMock && redirectUrl && (
+                <button
+                  type="button"
+                  onClick={handleOpenGateway}
+                  className="w-full py-3 px-4 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <FiSmartphone className="w-4 h-4" />
+                  <span>Buka Midtrans Snap Payment</span>
+                  <FiExternalLink className="w-3.5 h-3.5" />
+                </button>
+              )}
+
+              {/* Instant Simulator / Demo Button */}
               <button
                 type="button"
-                onClick={handleOpenGateway}
-                className="w-full py-3 px-4 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                disabled={simulating}
+                onClick={handleSimulatePayment}
+                className="w-full py-3 px-4 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <FiSmartphone className="w-4 h-4" />
-                <span>Buka Halaman Pembayaran QRIS</span>
-                <FiExternalLink className="w-3.5 h-3.5" />
+                <FiZap className="w-4 h-4" />
+                <span>
+                  {simulating
+                    ? 'Memproses Pembayaran...'
+                    : `Bayar Sekarang (${formatCurrency(amount)}) — Simulasi Lunas`}
+                </span>
               </button>
 
               <button
                 type="button"
                 disabled={checking}
                 onClick={handleCheckStatus}
-                className="w-full py-2.5 px-4 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-2.5 px-4 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <FiRefreshCw className={`w-3.5 h-3.5 ${checking ? 'animate-spin' : ''}`} />
                 <span>{checking ? 'Memeriksa...' : 'Cek Status Pembayaran'}</span>
               </button>
-
-              {/* Demo Sandbox Simulator Helper */}
-              <div className="pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  disabled={simulating}
-                  onClick={handleSimulatePayment}
-                  className="w-full py-2 px-3 text-[11px] font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-dashed border-emerald-300 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  <FiZap className="w-3.5 h-3.5" />
-                  <span>
-                    {simulating ? 'Menyimulasikan...' : 'Simulasikan Bayar Lunas (Mode Sandbox)'}
-                  </span>
-                </button>
-                <p className="text-[10px] text-slate-400 text-center mt-1">
-                  Fitur simulasi sandbox untuk menguji webhook konfirmasi bayar otomatis tanpa saldo
-                  nyata.
-                </p>
-              </div>
             </div>
 
             <div className="pt-1 flex justify-end">
@@ -265,7 +309,7 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
 export default function PaymentModal({
   isOpen,
   onClose,
-  paymentData, // { invoice, redirect_url, token, order_id, amount }
+  paymentData, // { invoice, redirect_url, token, order_id, amount, is_mock }
   onPaymentSuccess,
 }) {
   if (!isOpen || !paymentData) return null;

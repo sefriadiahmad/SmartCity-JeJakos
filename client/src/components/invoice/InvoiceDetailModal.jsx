@@ -52,13 +52,13 @@ export default function InvoiceDetailModal({
     setPayError('');
     try {
       const res = await api.post(`/invoices/${invoice.id}/pay`);
-      const { redirect_url, token, order_id } = res.data;
+      const { redirect_url, token, order_id, is_mock } = res.data;
 
       if (onPaymentInitiated) {
-        onPaymentInitiated({ invoice, redirect_url, token, order_id });
+        onPaymentInitiated({ invoice, redirect_url, token, order_id, is_mock });
       }
 
-      if (redirect_url) {
+      if (redirect_url && !is_mock) {
         window.open(redirect_url, '_blank', 'noopener,noreferrer');
       }
     } catch (err) {
