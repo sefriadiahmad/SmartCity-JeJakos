@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { FiX, FiBookOpen, FiList, FiMap, FiSearch } from 'react-icons/fi';
 import api from '../../services/api';
 import KosCard from '../../components/kos/KosCard';
 import KosFilter from '../../components/kos/KosFilter';
@@ -170,22 +171,24 @@ export default function SearchResultsPage() {
                 <button
                   type="button"
                   onClick={() => handleClearSingleParam('q')}
-                  className="hover:text-red-600 ml-1 font-bold"
+                  aria-label="Hapus filter kata kunci"
+                  className="hover:text-red-600 ml-1 font-bold cursor-pointer"
                 >
-                  ✕
+                  <FiX className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
 
             {currentCampus && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-medium border border-emerald-200">
-                <span>🎓 {currentCampus}</span>
+                <span className="inline-flex items-center gap-1"><FiBookOpen className="w-3.5 h-3.5" /> {currentCampus}</span>
                 <button
                   type="button"
                   onClick={() => handleClearSingleParam('campus')}
-                  className="hover:text-red-600 ml-1 font-bold"
+                  aria-label="Hapus filter kampus"
+                  className="hover:text-red-600 ml-1 font-bold cursor-pointer"
                 >
-                  ✕
+                  <FiX className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
@@ -196,9 +199,10 @@ export default function SearchResultsPage() {
                 <button
                   type="button"
                   onClick={() => handleClearSingleParam('district')}
-                  className="hover:text-red-600 ml-1 font-bold"
+                  aria-label="Hapus filter kecamatan"
+                  className="hover:text-red-600 ml-1 font-bold cursor-pointer"
                 >
-                  ✕
+                  <FiX className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
@@ -209,9 +213,10 @@ export default function SearchResultsPage() {
                 <button
                   type="button"
                   onClick={() => handleClearSingleParam('type')}
-                  className="hover:text-red-600 ml-1 font-bold"
+                  aria-label="Hapus filter tipe"
+                  className="hover:text-red-600 ml-1 font-bold cursor-pointer"
                 >
-                  ✕
+                  <FiX className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
@@ -222,9 +227,10 @@ export default function SearchResultsPage() {
                 <button
                   type="button"
                   onClick={() => handleClearSingleParam('max_price')}
-                  className="hover:text-red-600 ml-1 font-bold"
+                  aria-label="Hapus filter harga"
+                  className="hover:text-red-600 ml-1 font-bold cursor-pointer"
                 >
-                  ✕
+                  <FiX className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
@@ -232,7 +238,7 @@ export default function SearchResultsPage() {
             <button
               type="button"
               onClick={() => setSearchParams(new URLSearchParams())}
-              className="text-red-600 hover:text-red-700 font-semibold underline text-xs ml-2"
+              className="text-red-600 hover:text-red-700 font-semibold underline text-xs ml-2 cursor-pointer"
             >
               Hapus Semua
             </button>
@@ -250,7 +256,7 @@ export default function SearchResultsPage() {
                 : 'text-slate-600'
             }`}
           >
-            📋 Daftar Kos ({kosList.length})
+            <span className="inline-flex items-center justify-center gap-1.5"><FiList className="w-3.5 h-3.5" /> Daftar Kos ({kosList.length})</span>
           </button>
           <button
             type="button"
@@ -261,7 +267,7 @@ export default function SearchResultsPage() {
                 : 'text-slate-600'
             }`}
           >
-            🗺️ Peta Interaktif
+            <span className="inline-flex items-center justify-center gap-1.5"><FiMap className="w-3.5 h-3.5" /> Peta Interaktif</span>
           </button>
         </div>
 
@@ -278,7 +284,7 @@ export default function SearchResultsPage() {
           </div>
         ) : kosList.length === 0 ? (
           <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 space-y-3">
-            <div className="text-3xl">🔍</div>
+            <FiSearch className="w-10 h-10 text-slate-300 mx-auto" />
             <h3 className="text-base font-bold text-slate-900">
               Tidak Ada Kos yang Cocok
             </h3>

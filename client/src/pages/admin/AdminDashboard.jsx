@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FiCheck, FiClock, FiStar } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
@@ -250,8 +251,8 @@ export default function AdminDashboard() {
                       <td className="py-2.5 px-4">
                         {u.role === 'pemilik' ? (
                           u.is_approved
-                            ? <span className="text-emerald-700 font-medium text-[10px]">✓ Disetujui</span>
-                            : <span className="text-amber-700 font-medium text-[10px]">⏳ Pending</span>
+                            ? <span className="inline-flex items-center gap-1 text-emerald-700 font-medium text-[10px]"><FiCheck className="w-3 h-3" /> Disetujui</span>
+                            : <span className="inline-flex items-center gap-1 text-amber-700 font-medium text-[10px]"><FiClock className="w-3 h-3" /> Pending</span>
                         ) : <span className="text-slate-400 text-[10px]">—</span>}
                       </td>
                       <td className="py-2.5 px-4 text-slate-500 text-[10px] whitespace-nowrap">
@@ -292,8 +293,8 @@ export default function AdminDashboard() {
                       <td className="py-2.5 px-4 text-slate-600">{k.district || '-'}</td>
                       <td className="py-2.5 px-4">
                         {k.is_approved
-                          ? <span className="text-emerald-700 font-medium text-[10px]">✓ Terverifikasi</span>
-                          : <span className="text-amber-700 font-medium text-[10px]">⏳ Menunggu</span>}
+                          ? <span className="inline-flex items-center gap-1 text-emerald-700 font-medium text-[10px]"><FiCheck className="w-3 h-3" /> Terverifikasi</span>
+                          : <span className="inline-flex items-center gap-1 text-amber-700 font-medium text-[10px]"><FiClock className="w-3 h-3" /> Menunggu</span>}
                       </td>
                     </tr>
                   ))}
@@ -326,7 +327,14 @@ export default function AdminDashboard() {
                     <td className="py-2.5 px-4 font-semibold text-slate-900">{rv.user_name}</td>
                     <td className="py-2.5 px-4 text-emerald-800 font-medium">{rv.kos_name}</td>
                     <td className="py-2.5 px-4">
-                      <span className="font-bold text-amber-600">{'★'.repeat(rv.rating)}<span className="text-slate-300">{'★'.repeat(5 - rv.rating)}</span></span>
+                      <span className="inline-flex items-center gap-0.5 text-amber-400">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <FiStar
+                            key={s}
+                            className={`w-3 h-3 ${s <= rv.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`}
+                          />
+                        ))}
+                      </span>
                     </td>
                     <td className="py-2.5 px-4 text-slate-600 max-w-xs truncate">{rv.content || <span className="italic text-slate-400">—</span>}</td>
                     <td className="py-2.5 px-4 text-slate-500 text-[10px] whitespace-nowrap">

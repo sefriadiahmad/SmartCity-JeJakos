@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { FiCheck, FiX } from 'react-icons/fi';
 import api from '../../../services/api';
 import { formatCurrency } from '../../../utils/formatCurrency';
 import { getPhotoUrl } from '../../../utils/imageUrl';
@@ -194,9 +195,10 @@ export default function RoomManagementModal({ isOpen, onClose, kos, onRoomsUpdat
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+            aria-label="Tutup"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
 
@@ -401,14 +403,14 @@ export default function RoomManagementModal({ isOpen, onClose, kos, onRoomsUpdat
                           <button
                             type="button"
                             onClick={() => handleToggleAvailability(room)}
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition cursor-pointer ${
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition cursor-pointer inline-flex items-center gap-1 ${
                               room.is_available
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                                 : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
                             }`}
                             title="Klik untuk ubah ketersediaan"
                           >
-                            {room.is_available ? '✓ Tersedia' : '✕ Terisi'}
+                            {room.is_available ? <><FiCheck className="w-3 h-3" /> Tersedia</> : <><FiX className="w-3 h-3" /> Terisi</>}
                           </button>
                         </div>
                         <p className="text-xs font-semibold text-emerald-700 mt-0.5">

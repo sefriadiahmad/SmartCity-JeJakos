@@ -1,5 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  FiClock,
+  FiAlertTriangle,
+  FiCheckCircle,
+  FiCheck,
+  FiX,
+  FiSearch,
+  FiFileText,
+  FiDollarSign,
+  FiBell,
+  FiMessageCircle,
+} from 'react-icons/fi';
 import api from '../../../services/api';
 import { formatCurrency } from '../../../utils/formatCurrency';
 import { getPhotoUrl } from '../../../utils/imageUrl';
@@ -16,17 +28,17 @@ const STATUS_CONFIG = {
   unpaid: {
     label: 'Belum Dibayar',
     badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-    icon: '⏳',
+    icon: FiClock,
   },
   overdue: {
     label: 'Lewat Jatuh Tempo',
     badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
-    icon: '⚠️',
+    icon: FiAlertTriangle,
   },
   paid: {
     label: 'Lunas',
     badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    icon: '✓',
+    icon: FiCheckCircle,
   },
 };
 
@@ -252,15 +264,22 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
           }`}
         >
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <span>{actionFeedback.type === 'success' ? '✓' : '⚠️'}</span>
+            <span>
+              {actionFeedback.type === 'success' ? (
+                <FiCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : (
+                <FiAlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              )}
+            </span>
             <span className="font-semibold break-words">{actionFeedback.text}</span>
           </div>
           <button
             type="button"
             onClick={() => setActionFeedback(null)}
-            className="shrink-0 text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
+            aria-label="Tutup"
+            className="shrink-0 text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -321,7 +340,7 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
               className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
             />
             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-              🔍
+              <FiSearch className="w-3.5 h-3.5" />
             </span>
           </div>
         </div>
@@ -345,8 +364,8 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
         </div>
       ) : filteredInvoices.length === 0 ? (
         <div className="py-16 text-center bg-white rounded-3xl border border-dashed border-slate-300 p-8 space-y-3">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 text-slate-400 text-2xl flex items-center justify-center font-bold border border-slate-200">
-            🧾
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-200">
+            <FiFileText className="w-7 h-7 text-slate-300" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900">
@@ -367,8 +386,9 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
             const badge = STATUS_CONFIG[inv.status] || {
               label: inv.status,
               badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
-              icon: '•',
+              icon: FiClock,
             };
+            const BadgeIcon = badge.icon;
 
             const isUnpaid = inv.status === 'unpaid' || inv.status === 'overdue';
             const isReminding = remindingId === inv.id;
@@ -406,7 +426,7 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
                   <span
                     className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border self-start sm:self-auto ${badge.badgeClass}`}
                   >
-                    <span>{badge.icon}</span>
+                    <BadgeIcon className="w-3.5 h-3.5 shrink-0" />
                     <span>{badge.label}</span>
                   </span>
                 </div>
@@ -458,14 +478,17 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
                     </div>
 
                     {inv.paid_at && (
-                      <p className="text-[11px] text-emerald-700 font-medium pt-0.5">
-                        ✓ Lunas pada{' '}
-                        {new Date(inv.paid_at).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}{' '}
-                        ({inv.payment_method === 'manual' ? 'Tunai' : inv.payment_method?.toUpperCase()})
+                      <p className="text-[11px] text-emerald-700 font-medium pt-0.5 flex items-center gap-1">
+                        <FiCheck className="w-3.5 h-3.5 shrink-0" />
+                        <span>
+                          Lunas pada{' '}
+                          {new Date(inv.paid_at).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}{' '}
+                          ({inv.payment_method === 'manual' ? 'Tunai' : inv.payment_method?.toUpperCase()})
+                        </span>
                       </p>
                     )}
 
@@ -490,7 +513,7 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
                           onClick={() => setManualPaymentInvoice(inv)}
                           className="w-full py-2 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <span>💵</span>
+                          <FiDollarSign className="w-3.5 h-3.5" />
                           <span>Catat Bayar Manual</span>
                         </button>
 
@@ -501,14 +524,15 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
                           onClick={() => handleSendReminder(inv)}
                           className="w-full py-1.5 px-3 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
-                          <span>🔔</span>
+                          <FiBell className="w-3.5 h-3.5" />
                           <span>{isReminding ? 'Mengirim...' : 'Kirim Pengingat'}</span>
                         </button>
                       </div>
                     ) : (
                       <div className="p-2 bg-emerald-50/60 rounded-xl border border-emerald-100 text-center">
-                        <span className="text-xs font-bold text-emerald-800 block">
-                          ✓ Pembayaran Selesai
+                        <span className="text-xs font-bold text-emerald-800 block flex items-center justify-center gap-1">
+                          <FiCheck className="w-3.5 h-3.5" />
+                          <span>Pembayaran Selesai</span>
                         </span>
                         <span className="text-[10px] text-emerald-600 block mt-0.5">
                           Metode: {inv.payment_method?.toUpperCase() || 'MANUAL'}
@@ -523,7 +547,7 @@ export default function TagihanPenghuniTab({ kosList = [], onStatsUpdated }) {
                         onClick={() => handleStartChat(inv)}
                         className="flex-1 py-1.5 px-2.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
                       >
-                        <span>💬</span>
+                        <FiMessageCircle className="w-3.5 h-3.5" />
                         <span>Chat</span>
                       </button>
 

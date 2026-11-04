@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FiStar } from 'react-icons/fi';
 import api from '../../services/api';
 
 export default function ReviewForm({ bookings, onCreated }) {
@@ -29,7 +30,7 @@ export default function ReviewForm({ bookings, onCreated }) {
       <option value="">Pilih kamar yang ditempati</option>
       {bookings.map((booking) => <option key={booking.id} value={booking.id}>Kamar {booking.room?.room_number || booking.room_id}</option>)}
     </select>
-    <div className="flex gap-1" aria-label="Pilih rating">{[1, 2, 3, 4, 5].map((star) => <button key={star} type="button" onClick={() => setRating(star)} className={`text-2xl leading-none ${star <= rating ? 'text-amber-400' : 'text-slate-300'}`} aria-label={`${star} bintang`}>★</button>)}</div>
+    <div className="flex gap-1" aria-label="Pilih rating">{[1, 2, 3, 4, 5].map((star) => <button key={star} type="button" onClick={() => setRating(star)} className="p-1 cursor-pointer transition hover:scale-110" aria-label={`${star} bintang`}><FiStar className={`w-5 h-5 ${star <= rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} /></button>)}</div>
     <textarea value={content} onChange={(event) => setContent(event.target.value)} maxLength="2000" rows="3" placeholder="Ceritakan pengalaman Anda (opsional)." className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs" />
     <div className="flex justify-end"><button disabled={saving || !bookingId || !rating} className="rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60">{saving ? 'Mengirim...' : 'Kirim Ulasan'}</button></div>
   </form>;

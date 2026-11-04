@@ -1,5 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  FiClock,
+  FiCheckCircle,
+  FiHome,
+  FiFlag,
+  FiXCircle,
+  FiSlash,
+  FiSearch,
+  FiMapPin,
+  FiMessageCircle,
+} from 'react-icons/fi';
+import { FaBed } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -18,32 +30,32 @@ const STATUS_BADGES = {
   pending: {
     label: 'Menunggu Konfirmasi',
     badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-    icon: '⏳',
+    icon: FiClock,
   },
   accepted: {
     label: 'Diterima',
     badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
-    icon: '✓',
+    icon: FiCheckCircle,
   },
   active: {
     label: 'Penghuni Aktif',
     badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    icon: '🏠',
+    icon: FiHome,
   },
   completed: {
     label: 'Selesai',
     badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
-    icon: '🏁',
+    icon: FiFlag,
   },
   rejected: {
     label: 'Ditolak',
     badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
-    icon: '✕',
+    icon: FiXCircle,
   },
   cancelled: {
     label: 'Dibatalkan',
     badgeClass: 'bg-slate-100 text-slate-600 border-slate-200',
-    icon: '🚫',
+    icon: FiSlash,
   },
 };
 
@@ -172,7 +184,7 @@ export default function MyBookingsPage() {
           to="/kos"
           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs self-start sm:self-auto cursor-pointer"
         >
-          <span>🔍</span>
+          <FiSearch className="w-3.5 h-3.5" />
           <span>Cari Kos Lain</span>
         </Link>
       </div>
@@ -219,7 +231,7 @@ export default function MyBookingsPage() {
               className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
             />
             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-              🔍
+              <FiSearch className="w-3.5 h-3.5" />
             </span>
           </div>
         </div>
@@ -255,8 +267,8 @@ export default function MyBookingsPage() {
         </div>
       ) : filteredBookings.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-slate-200 shadow-xs space-y-4">
-          <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-slate-200">
-            🛏️
+          <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto border border-slate-200">
+            <FaBed className="w-8 h-8 text-slate-300" />
           </div>
           <div className="space-y-1">
             <h3 className="font-bold text-base text-slate-800">
@@ -281,8 +293,9 @@ export default function MyBookingsPage() {
             const badge = STATUS_BADGES[b.status] || {
               label: b.status,
               badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
-              icon: '•',
+              icon: FiClock,
             };
+            const BadgeIcon = badge.icon;
 
             const roomPhoto =
               b.room?.primary_photo ||
@@ -322,7 +335,7 @@ export default function MyBookingsPage() {
                   <span
                     className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border self-start sm:self-auto ${badge.badgeClass}`}
                   >
-                    <span>{badge.icon}</span>
+                    <BadgeIcon className="w-3.5 h-3.5 shrink-0" />
                     <span>{badge.label}</span>
                   </span>
                 </div>
@@ -353,8 +366,9 @@ export default function MyBookingsPage() {
                       >
                         {b.kos?.name}
                       </Link>
-                      <p className="text-xs text-slate-500 line-clamp-1">
-                        📍 {b.kos?.address}, {b.kos?.district}
+                      <p className="text-xs text-slate-500 line-clamp-1 flex items-center gap-1">
+                        <FiMapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{b.kos?.address}, {b.kos?.district}</span>
                       </p>
                     </div>
 
@@ -414,7 +428,7 @@ export default function MyBookingsPage() {
                       onClick={() => handleStartChat(b)}
                       className="w-full py-2 px-3 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition cursor-pointer text-center flex items-center justify-center gap-1.5"
                     >
-                      <span>💬</span>
+                      <FiMessageCircle className="w-3.5 h-3.5" />
                       <span>Chat Pemilik</span>
                     </button>
 

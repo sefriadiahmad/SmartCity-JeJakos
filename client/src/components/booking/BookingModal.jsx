@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FiCheck, FiX, FiInfo, FiAlertTriangle } from 'react-icons/fi';
+import { FaBed } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -142,7 +144,9 @@ function BookingModalContent({ onClose, kos, initialRoom, onBookingSuccess }) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🛏️</span>
+            <span className="text-xl text-emerald-600">
+              <FaBed className="w-5 h-5" />
+            </span>
             <div>
               <h3 className="font-bold text-base text-slate-900">Form Pemesanan Kamar</h3>
               <p className="text-xs text-slate-500">{kos.name}</p>
@@ -151,9 +155,10 @@ function BookingModalContent({ onClose, kos, initialRoom, onBookingSuccess }) {
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
 
@@ -161,7 +166,7 @@ function BookingModalContent({ onClose, kos, initialRoom, onBookingSuccess }) {
         {successBooking ? (
           <div className="space-y-5 text-center py-4">
             <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner">
-              ✓
+              <FiCheck className="w-8 h-8 text-emerald-600" />
             </div>
 
             <div className="space-y-1.5">
@@ -241,7 +246,7 @@ function BookingModalContent({ onClose, kos, initialRoom, onBookingSuccess }) {
             {!user && (
               <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 space-y-2">
                 <div className="flex items-center gap-1.5 font-bold text-amber-800">
-                  <span>ℹ️</span>
+                  <FiInfo className="w-4 h-4 shrink-0" />
                   <span>Autentikasi Diperlukan</span>
                 </div>
                 <p className="text-[11px] leading-relaxed">
@@ -259,15 +264,17 @@ function BookingModalContent({ onClose, kos, initialRoom, onBookingSuccess }) {
             )}
 
             {isOwner && (
-              <div className="p-3 bg-red-50 rounded-2xl border border-red-200 text-xs text-red-700">
-                ⚠️ Anda adalah pemilik properti ini. Anda tidak dapat memesan kos milik sendiri.
+              <div className="p-3 bg-red-50 rounded-2xl border border-red-200 text-xs text-red-700 flex items-center gap-1.5">
+                <FiAlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+                <span>Anda adalah pemilik properti ini. Anda tidak dapat memesan kos milik sendiri.</span>
               </div>
             )}
 
             {isPemilikRole && !isOwner && user?.role !== 'admin' && (
-              <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-800">
-                ⚠️ Akun Anda terdaftar sebagai <strong>Pemilik Kos</strong>. Fitur pemesanan hanya
-                dapat digunakan oleh akun <strong>Pencari Kos</strong>.
+              <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-800 flex items-center gap-1.5">
+                <FiAlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+                <span>Akun Anda terdaftar sebagai <strong>Pemilik Kos</strong>. Fitur pemesanan hanya
+                dapat digunakan oleh akun <strong>Pencari Kos</strong>.</span>
               </div>
             )}
 

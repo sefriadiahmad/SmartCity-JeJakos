@@ -1,4 +1,13 @@
 import { useState } from 'react';
+import {
+  FiCreditCard,
+  FiX,
+  FiCheck,
+  FiSmartphone,
+  FiExternalLink,
+  FiRefreshCw,
+  FiZap,
+} from 'react-icons/fi';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
 
@@ -83,7 +92,9 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
           <div className="flex items-center gap-2">
-            <span className="text-xl">💳</span>
+            <span className="text-xl text-emerald-600">
+              <FiCreditCard className="w-5 h-5" />
+            </span>
             <div>
               <h3 className="font-bold text-base text-slate-900">
                 Pembayaran Tagihan Sewa
@@ -94,9 +105,10 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
 
@@ -104,7 +116,7 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
         {paymentStatus === 'paid' ? (
           <div className="space-y-4 text-center py-4">
             <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner">
-              ✓
+              <FiCheck className="w-8 h-8 text-emerald-600" />
             </div>
             <div className="space-y-1">
               <h4 className="text-lg font-extrabold text-slate-900">Pembayaran Berhasil!</h4>
@@ -199,9 +211,9 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
                 onClick={handleOpenGateway}
                 className="w-full py-3 px-4 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>📲</span>
+                <FiSmartphone className="w-4 h-4" />
                 <span>Buka Halaman Pembayaran QRIS</span>
-                <span>↗</span>
+                <FiExternalLink className="w-3.5 h-3.5" />
               </button>
 
               <button
@@ -210,7 +222,7 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
                 onClick={handleCheckStatus}
                 className="w-full py-2.5 px-4 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <span>🔄</span>
+                <FiRefreshCw className={`w-3.5 h-3.5 ${checking ? 'animate-spin' : ''}`} />
                 <span>{checking ? 'Memeriksa...' : 'Cek Status Pembayaran'}</span>
               </button>
 
@@ -222,7 +234,7 @@ function PaymentModalContent({ onClose, paymentData, onPaymentSuccess }) {
                   onClick={handleSimulatePayment}
                   className="w-full py-2 px-3 text-[11px] font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-dashed border-emerald-300 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <span>⚡</span>
+                  <FiZap className="w-3.5 h-3.5" />
                   <span>
                     {simulating ? 'Menyimulasikan...' : 'Simulasikan Bayar Lunas (Mode Sandbox)'}
                   </span>

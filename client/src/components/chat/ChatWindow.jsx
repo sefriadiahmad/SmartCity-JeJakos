@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { FiAlertTriangle, FiAlertCircle, FiMessageSquare, FiMessageCircle, FiHome, FiX } from 'react-icons/fi';
 import api from '../../services/api';
 import {
   socket,
@@ -189,7 +190,7 @@ export default function ChatWindow({
   if (error && !conversation) {
     return (
       <div className="flex-1 h-full flex flex-col items-center justify-center p-8 text-center bg-slate-50">
-        <div className="text-3xl mb-2">⚠️</div>
+        <FiAlertTriangle className="w-10 h-10 mb-2 text-amber-500" />
         <p className="text-sm font-bold text-slate-800">{error}</p>
         {onBack && (
           <button
@@ -266,9 +267,9 @@ export default function ChatWindow({
             target="_blank"
             rel="noreferrer"
             title="Hubungi via WhatsApp"
-            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold border border-emerald-200 transition flex items-center gap-1 shrink-0"
+            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold border border-emerald-200 transition flex items-center gap-1.5 shrink-0"
           >
-            <span>💬</span>
+            <FiMessageSquare className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">WhatsApp</span>
           </a>
         )}
@@ -278,7 +279,7 @@ export default function ChatWindow({
       {kosData && (
         <div className="bg-emerald-50/70 border-b border-emerald-100 px-4 py-2 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2 min-w-0 text-xs">
-            <span className="text-sm">🏠</span>
+            <FiHome className="w-4 h-4 text-emerald-700 shrink-0" />
             <div className="truncate">
               <span className="text-slate-500 mr-1">Terkait:</span>
               <strong className="text-slate-800 font-semibold">{kosData.name}</strong>
@@ -302,7 +303,7 @@ export default function ChatWindow({
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
-            <span className="text-4xl mb-2">💬</span>
+            <FiMessageCircle className="w-12 h-12 mb-2 text-slate-300" />
             <p className="text-sm font-semibold text-slate-600">Belum ada percakapan</p>
             <p className="text-xs text-slate-400 mt-1 max-w-xs">
               Kirim pesan pertama untuk menanyakan informasi ketersediaan kamar, fasilitas, atau jadwal survey.
@@ -323,13 +324,17 @@ export default function ChatWindow({
       {/* Error notification banner */}
       {error && (
         <div className="bg-rose-50 border-t border-rose-200 px-4 py-2 text-xs text-rose-700 flex items-center justify-between">
-          <span>⚠️ {error}</span>
+          <span className="flex items-center gap-1.5">
+            <FiAlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </span>
           <button
             type="button"
             onClick={() => setError(null)}
-            className="text-rose-500 font-bold ml-2 cursor-pointer"
+            aria-label="Tutup pesan error"
+            className="text-rose-500 font-bold ml-2 cursor-pointer p-0.5"
           >
-            ✕
+            <FiX className="w-3.5 h-3.5" />
           </button>
         </div>
       )}

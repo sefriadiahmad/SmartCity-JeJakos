@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { FiMapPin, FiCrosshair, FiX, FiLayers, FiCamera, FiCheckCircle, FiPlus } from 'react-icons/fi';
+import { FiMapPin, FiCrosshair, FiX, FiLayers, FiCamera, FiCheckCircle } from 'react-icons/fi';
 import api from '../../../services/api';
 
 const JAMBI_DISTRICTS = [

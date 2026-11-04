@@ -1,22 +1,32 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FiMessageCircle, FiRefreshCw, FiSend, FiX } from 'react-icons/fi';
+import {
+  FiMessageCircle,
+  FiRefreshCw,
+  FiSend,
+  FiX,
+  FiAlertTriangle,
+  FiBookOpen,
+  FiUser,
+  FiMapPin,
+  FiDollarSign,
+} from 'react-icons/fi';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import ChatbotMessage from './ChatbotMessage';
 
 const QUICK_PROMPTS = [
-  '🎓 Kos dekat UNJA Mendalo',
-  '👧 Kos putri ada WiFi & AC',
-  '🕌 Kos dekat UIN STS',
-  '💰 Kos murah budget 600rb',
+  { text: 'Kos dekat UNJA Mendalo', icon: FiBookOpen },
+  { text: 'Kos putri ada WiFi & AC', icon: FiUser },
+  { text: 'Kos dekat UIN STS', icon: FiMapPin },
+  { text: 'Kos murah budget 600rb', icon: FiDollarSign },
 ];
 
 const INITIAL_GREETING = {
   id: 'init-greeting',
   role: 'assistant',
   content:
-    'Halo! Saya Asisten Virtual JeJakos 🤖\nSaya siap membantu Anda menemukan kos idaman di Provinsi Jambi. Mau cari kos putra, putri, atau campur? Di area kampus mana dan berapa perkiraan budget Anda?',
+    'Halo! Saya Asisten Virtual JeJakos.\nSaya siap membantu Anda menemukan kos idaman di Provinsi Jambi. Mau cari kos putra, putri, atau campur? Di area kampus mana dan berapa perkiraan budget Anda?',
   timestamp: 'Baru saja',
   kos: [],
 };
@@ -265,16 +275,20 @@ export default function ChatbotWidget({ defaultOpen = false }) {
                   Pilihan Cepat:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {QUICK_PROMPTS.map((prompt, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleSendMessage(prompt)}
-                      className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 hover:bg-emerald-50/50 text-xs transition shadow-2xs text-left"
-                    >
-                      {prompt}
-                    </button>
-                  ))}
+                  {QUICK_PROMPTS.map((prompt, idx) => {
+                    const Icon = prompt.icon;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSendMessage(prompt.text)}
+                        className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 hover:bg-emerald-50/50 text-xs transition shadow-2xs text-left inline-flex items-center gap-1.5"
+                      >
+                        <Icon className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <span>{prompt.text}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -297,7 +311,7 @@ export default function ChatbotWidget({ defaultOpen = false }) {
             {/* Error Message */}
             {errorMsg && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
-                <span>⚠️</span>
+                <FiAlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <p>{errorMsg}</p>
                   {!user && (

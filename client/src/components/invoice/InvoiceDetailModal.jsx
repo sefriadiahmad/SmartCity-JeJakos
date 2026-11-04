@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FiClock, FiAlertTriangle, FiCheckCircle, FiX, FiMapPin, FiMessageCircle, FiCreditCard } from 'react-icons/fi';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
 import api from '../../services/api';
@@ -8,19 +9,19 @@ const STATUS_CONFIG = {
   unpaid: {
     label: 'Belum Dibayar',
     badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-    icon: '⏳',
+    icon: FiClock,
     desc: 'Tagihan sewa menunggu pembayaran sebelum jatuh tempo.',
   },
   overdue: {
     label: 'Lewat Jatuh Tempo',
     badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
-    icon: '⚠️',
+    icon: FiAlertTriangle,
     desc: 'Tanggal jatuh tempo telah lewat. Mohon segera lunasi pembayaran.',
   },
   paid: {
     label: 'Lunas',
     badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    icon: '✓',
+    icon: FiCheckCircle,
     desc: 'Pembayaran telah dikonfirmasi dan tercatat lunas di sistem.',
   },
 };
@@ -39,9 +40,10 @@ export default function InvoiceDetailModal({
   const statusInfo = STATUS_CONFIG[invoice.status] || {
     label: invoice.status,
     badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
-    icon: '•',
+    icon: FiClock,
     desc: '',
   };
+  const StatusIcon = statusInfo.icon;
 
   const isUnpaid = invoice.status === 'unpaid' || invoice.status === 'overdue';
 
@@ -81,7 +83,9 @@ export default function InvoiceDetailModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="text-xl">{statusInfo.icon}</span>
+            <span className="text-xl text-slate-700">
+              <StatusIcon className="w-5 h-5 shrink-0" />
+            </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-bold text-base text-slate-900">
@@ -106,9 +110,10 @@ export default function InvoiceDetailModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
 
@@ -193,8 +198,9 @@ export default function InvoiceDetailModal({
               >
                 {invoice.kos?.name}
               </Link>
-              <p className="text-[11px] text-slate-500 truncate">
-                📍 {invoice.kos?.address}, {invoice.kos?.district}
+              <p className="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                <FiMapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="truncate">{invoice.kos?.address}, {invoice.kos?.district}</span>
               </p>
               <p className="font-semibold text-emerald-800 text-[11px] pt-0.5">
                 Unit: {invoice.room?.room_number || `Kamar #${invoice.room?.id}`} (
@@ -218,9 +224,10 @@ export default function InvoiceDetailModal({
               href={waUrl}
               target="_blank"
               rel="noreferrer"
-              className="py-1 px-3 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition"
+              className="py-1 px-3 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition inline-flex items-center gap-1.5"
             >
-              💬 WhatsApp
+              <FiMessageCircle className="w-3.5 h-3.5" />
+              <span>WhatsApp</span>
             </a>
           )}
         </div>
@@ -249,7 +256,7 @@ export default function InvoiceDetailModal({
               onClick={handlePayNow}
               className="py-2.5 px-6 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 rounded-xl transition shadow-sm flex items-center gap-2 cursor-pointer"
             >
-              <span>💳</span>
+              <FiCreditCard className="w-4 h-4" />
               <span>{paying ? 'Menyiapkan...' : 'Bayar via QRIS Midtrans'}</span>
             </button>
           )}

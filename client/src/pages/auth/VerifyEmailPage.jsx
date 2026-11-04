@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { FiCheck } from 'react-icons/fi';
 import api from '../../services/api';
 
 export default function VerifyEmailPage() {
@@ -112,8 +113,8 @@ export default function VerifyEmailPage() {
         {status === 'success' && (
           <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-slate-800 space-y-4">
             <div className="text-center">
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-600 text-white mb-2 font-bold">
-                ✓
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-600 text-white mb-2">
+                <FiCheck className="w-6 h-6" />
               </span>
               <h2 className="text-lg font-bold text-emerald-800">Verifikasi Berhasil!</h2>
               <p className="text-sm text-slate-600 mt-1">{message}</p>

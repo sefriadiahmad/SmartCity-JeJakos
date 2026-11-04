@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { FiMessageCircle, FiSearch, FiInbox, FiHome, FiMessageSquare } from 'react-icons/fi';
 import api from '../../services/api';
 import useAuth from '../../hooks/useAuth';
 import { socket, connectSocket } from '../../services/socket';
@@ -122,7 +123,7 @@ export default function ConversationsPage() {
       <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-            <span>💬</span>
+            <FiMessageCircle className="w-6 h-6 text-emerald-600" />
             <span>Percakapan Langsung</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -132,9 +133,10 @@ export default function ConversationsPage() {
 
         <Link
           to="/kos"
-          className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 transition"
+          className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 transition inline-flex items-center gap-1.5"
         >
-          🔍 Jelajahi Kos Lainnya
+          <FiSearch className="w-3.5 h-3.5" />
+          <span>Jelajahi Kos Lainnya</span>
         </Link>
       </div>
 
@@ -150,7 +152,7 @@ export default function ConversationsPage() {
           <div className="p-3 border-b border-slate-100 bg-slate-50/50">
             <div className="relative">
               <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">
-                🔍
+                <FiSearch className="w-3.5 h-3.5" />
               </span>
               <input
                 type="text"
@@ -171,7 +173,7 @@ export default function ConversationsPage() {
               </div>
             ) : filteredConversations.length === 0 ? (
               <div className="p-8 text-center text-slate-400 flex flex-col items-center">
-                <span className="text-3xl mb-1.5">📭</span>
+                <FiInbox className="w-8 h-8 text-slate-300 mb-1.5" />
                 <p className="text-xs font-semibold text-slate-600">
                   {searchQuery ? 'Tidak ada hasil pencarian' : 'Belum ada percakapan'}
                 </p>
@@ -234,7 +236,7 @@ export default function ConversationsPage() {
                       {/* Associated Kos pill */}
                       {c.kos && (
                         <div className="flex items-center gap-1 text-[10px] text-emerald-800 font-semibold mt-0.5 truncate">
-                          <span>🏠</span>
+                          <FiHome className="w-3 h-3 text-emerald-700 shrink-0" />
                           <span className="truncate">{c.kos.name}</span>
                         </div>
                       )}
@@ -279,8 +281,8 @@ export default function ConversationsPage() {
             />
           ) : (
             <div className="flex-1 h-full flex flex-col items-center justify-center text-center p-8 text-slate-400 bg-slate-50/50">
-              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-3xl mb-3 shadow-2xs">
-                💬
+              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 shadow-2xs">
+                <FiMessageSquare className="w-8 h-8 text-emerald-600" />
               </div>
               <h3 className="text-sm font-bold text-slate-800">Pilih Percakapan</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-xs leading-relaxed">

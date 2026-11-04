@@ -1,5 +1,21 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  FiClock,
+  FiCheckCircle,
+  FiHome,
+  FiFlag,
+  FiXCircle,
+  FiSlash,
+  FiCheck,
+  FiAlertTriangle,
+  FiInfo,
+  FiX,
+  FiSearch,
+  FiClipboard,
+  FiMapPin,
+  FiMessageCircle,
+} from 'react-icons/fi';
 import api from '../../../services/api';
 import { formatCurrency } from '../../../utils/formatCurrency';
 import { getPhotoUrl } from '../../../utils/imageUrl';
@@ -17,32 +33,32 @@ const STATUS_CONFIG = {
   pending: {
     label: 'Menunggu Konfirmasi',
     badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-    icon: '⏳',
+    icon: FiClock,
   },
   accepted: {
     label: 'Diterima',
     badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
-    icon: '✓',
+    icon: FiCheckCircle,
   },
   active: {
     label: 'Penghuni Aktif',
     badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    icon: '🏠',
+    icon: FiHome,
   },
   completed: {
     label: 'Selesai',
     badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
-    icon: '🏁',
+    icon: FiFlag,
   },
   rejected: {
     label: 'Ditolak',
     badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
-    icon: '✕',
+    icon: FiXCircle,
   },
   cancelled: {
     label: 'Dibatalkan',
     badgeClass: 'bg-slate-100 text-slate-600 border-slate-200',
-    icon: '🚫',
+    icon: FiSlash,
   },
 };
 
@@ -358,16 +374,23 @@ export default function PesananMasukTab({ onStatsUpdated }) {
         >
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <span>
-              {actionFeedback.type === 'success' ? '✓' : actionFeedback.type === 'error' ? '⚠️' : 'ℹ️'}
+              {actionFeedback.type === 'success' ? (
+                <FiCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : actionFeedback.type === 'error' ? (
+                <FiAlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              ) : (
+                <FiInfo className="w-4 h-4 text-slate-600 shrink-0" />
+              )}
             </span>
             <span className="font-semibold break-words">{actionFeedback.text}</span>
           </div>
           <button
             type="button"
             onClick={() => setActionFeedback(null)}
-            className="shrink-0 text-slate-400 hover:text-slate-600 font-bold"
+            aria-label="Tutup"
+            className="shrink-0 text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -411,7 +434,7 @@ export default function PesananMasukTab({ onStatsUpdated }) {
             className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
           />
           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-            🔍
+            <FiSearch className="w-3.5 h-3.5" />
           </span>
         </div>
       </div>
@@ -434,8 +457,8 @@ export default function PesananMasukTab({ onStatsUpdated }) {
         </div>
       ) : filteredBookings.length === 0 ? (
         <div className="py-16 text-center bg-white rounded-3xl border border-dashed border-slate-300 p-8 space-y-3">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 text-slate-400 text-2xl flex items-center justify-center font-bold border border-slate-200">
-            📋
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-200">
+            <FiClipboard className="w-7 h-7 text-slate-300" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900">
@@ -454,8 +477,9 @@ export default function PesananMasukTab({ onStatsUpdated }) {
             const badge = STATUS_CONFIG[b.status] || {
               label: b.status,
               badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
-              icon: '•',
+              icon: FiClock,
             };
+            const BadgeIcon = badge.icon;
 
             const tenantPhoto = b.tenant?.photo_url;
             const isProcessing = processingId === b.id;
@@ -491,7 +515,7 @@ export default function PesananMasukTab({ onStatsUpdated }) {
                   <span
                     className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border self-start sm:self-auto ${badge.badgeClass}`}
                   >
-                    <span>{badge.icon}</span>
+                    <BadgeIcon className="w-3.5 h-3.5 shrink-0" />
                     <span>{badge.label}</span>
                   </span>
                 </div>
@@ -545,8 +569,9 @@ export default function PesananMasukTab({ onStatsUpdated }) {
                       <p className="font-bold text-slate-900 text-sm line-clamp-1">
                         {b.kos?.name}
                       </p>
-                      <p className="text-[11px] text-slate-500 line-clamp-1">
-                        📍 {b.kos?.address}
+                      <p className="text-[11px] text-slate-500 line-clamp-1 flex items-center gap-1">
+                        <FiMapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{b.kos?.address}</span>
                       </p>
                     </div>
 
@@ -588,7 +613,7 @@ export default function PesananMasukTab({ onStatsUpdated }) {
                             onClick={() => handleAcceptBooking(b)}
                             className="flex-1 py-2 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                           >
-                            <span>✓</span>
+                            <FiCheck className="w-3.5 h-3.5" />
                             <span>{isProcessing ? 'Memproses...' : 'Terima Pesanan'}</span>
                           </button>
                           <button
@@ -615,7 +640,7 @@ export default function PesananMasukTab({ onStatsUpdated }) {
                           onClick={() => handleActivateBooking(b)}
                           className="w-full py-2 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
-                          <span>🏠</span>
+                          <FiHome className="w-3.5 h-3.5" />
                           <span>{isProcessing ? 'Memproses...' : 'Catat Penghuni Aktif'}</span>
                         </button>
                         <p className="text-[10px] text-slate-500 leading-tight">
@@ -633,7 +658,7 @@ export default function PesananMasukTab({ onStatsUpdated }) {
                           onClick={() => handleCompleteBooking(b)}
                           className="w-full py-2 px-3 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
-                          <span>🏁</span>
+                          <FiFlag className="w-3.5 h-3.5" />
                           <span>{isProcessing ? 'Memproses...' : 'Selesaikan Masa Sewa'}</span>
                         </button>
                         <p className="text-[10px] text-slate-400 leading-tight">
@@ -649,7 +674,7 @@ export default function PesananMasukTab({ onStatsUpdated }) {
                         onClick={() => handleStartChat(b)}
                         className="flex-1 py-1.5 px-2.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
                       >
-                        <span>💬</span>
+                        <FiMessageCircle className="w-3.5 h-3.5" />
                         <span>Chat</span>
                       </button>
 
@@ -683,9 +708,10 @@ export default function PesananMasukTab({ onStatsUpdated }) {
               <button
                 type="button"
                 onClick={() => setRejectingBooking(null)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                aria-label="Tutup"
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
               >
-                ✕
+                <FiX className="w-4 h-4" />
               </button>
             </div>
 

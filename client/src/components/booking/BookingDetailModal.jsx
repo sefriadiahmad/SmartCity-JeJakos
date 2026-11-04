@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { FiClock, FiCheckCircle, FiHome, FiFlag, FiXCircle, FiSlash, FiX, FiMapPin, FiMessageCircle } from 'react-icons/fi';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
 import api from '../../services/api';
@@ -8,37 +9,37 @@ const STATUS_CONFIG = {
   pending: {
     label: 'Menunggu Konfirmasi',
     badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-    icon: '⏳',
+    icon: FiClock,
     desc: 'Menunggu persetujuan dari pemilik kos.',
   },
   accepted: {
     label: 'Diterima',
     badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
-    icon: '✓',
+    icon: FiCheckCircle,
     desc: 'Pemilik menyetujui pesanan. Lakukan pembayaran atau hubungi pemilik untuk proses masuk.',
   },
   active: {
     label: 'Penghuni Aktif',
     badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    icon: '🏠',
+    icon: FiHome,
     desc: 'Anda saat ini tercatat sebagai penghuni aktif di kos ini.',
   },
   completed: {
     label: 'Selesai',
     badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
-    icon: '🏁',
+    icon: FiFlag,
     desc: 'Masa sewa kamar telah berakhir.',
   },
   rejected: {
     label: 'Ditolak',
     badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
-    icon: '✕',
+    icon: FiXCircle,
     desc: 'Pemesanan tidak dapat diterima oleh pemilik.',
   },
   cancelled: {
     label: 'Dibatalkan',
     badgeClass: 'bg-slate-100 text-slate-600 border-slate-200',
-    icon: '🚫',
+    icon: FiSlash,
     desc: 'Pemesanan telah dibatalkan.',
   },
 };
@@ -59,9 +60,10 @@ export default function BookingDetailModal({
   const statusInfo = STATUS_CONFIG[booking.status] || {
     label: booking.status,
     badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
-    icon: '•',
+    icon: FiClock,
     desc: '',
   };
+  const StatusIcon = statusInfo.icon;
 
   const canCancel = booking.status === 'pending' || booking.status === 'accepted';
 
@@ -116,7 +118,9 @@ export default function BookingDetailModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="text-xl">{statusInfo.icon}</span>
+            <span className="text-xl text-slate-700">
+              <StatusIcon className="w-5 h-5 shrink-0" />
+            </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-bold text-base text-slate-900">
@@ -141,9 +145,10 @@ export default function BookingDetailModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
 
@@ -181,8 +186,9 @@ export default function BookingDetailModal({
               >
                 {booking.kos?.name}
               </Link>
-              <p className="text-xs text-slate-600 truncate">
-                📍 {booking.kos?.address}, {booking.kos?.district}
+              <p className="text-xs text-slate-600 truncate flex items-center gap-1">
+                <FiMapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="truncate">{booking.kos?.address}, {booking.kos?.district}</span>
               </p>
               <div className="flex items-center gap-2 text-xs">
                 <span className="font-bold text-emerald-700">
@@ -242,9 +248,10 @@ export default function BookingDetailModal({
               <button
                 type="button"
                 onClick={handleStartChat}
-                className="py-1.5 px-3 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition cursor-pointer"
+                className="py-1.5 px-3 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition cursor-pointer inline-flex items-center gap-1.5"
               >
-                💬 Chat
+                <FiMessageCircle className="w-3.5 h-3.5" />
+                <span>Chat</span>
               </button>
               {waUrl && (
                 <a

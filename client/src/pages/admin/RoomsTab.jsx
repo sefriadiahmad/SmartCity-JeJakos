@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FiCheck } from 'react-icons/fi';
+import { FaBed } from 'react-icons/fa';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
 
@@ -65,7 +67,7 @@ export default function RoomsTab() {
             </div>
           ) : rooms.length === 0 ? (
             <div className="py-16 text-center text-slate-500 text-xs">
-              <p className="text-2xl mb-1">🛏️</p>
+              <FaBed className="w-8 h-8 text-slate-300 mx-auto mb-1" />
               <p className="font-semibold text-slate-700">Tidak ada kamar ditemukan</p>
             </div>
           ) : (
@@ -93,7 +95,7 @@ export default function RoomsTab() {
                       <td className="py-3 px-4 text-slate-600 capitalize">{r.pay_period}</td>
                       <td className="py-3 px-4">
                         {r.is_available
-                          ? <span className="px-2 py-0.5 rounded-full font-bold text-[10px] bg-emerald-100 text-emerald-800">✓ Tersedia</span>
+                          ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] bg-emerald-100 text-emerald-800"><FiCheck className="w-3 h-3" /> Tersedia</span>
                           : <span className="px-2 py-0.5 rounded-full font-bold text-[10px] bg-slate-100 text-slate-600">Terisi</span>}
                       </td>
                       <td className="py-3 px-4 text-slate-500 text-[11px] truncate max-w-xs">{r.description || '-'}</td>

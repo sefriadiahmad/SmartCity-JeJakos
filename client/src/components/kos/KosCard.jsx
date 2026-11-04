@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FiCamera, FiMapPin, FiStar } from 'react-icons/fi';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
 
@@ -59,7 +60,7 @@ export default function KosCard({
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 text-xs py-8">
-              <span className="text-2xl mb-1">📷</span>
+              <FiCamera className="w-6 h-6 mb-1 text-slate-300" />
               <span>Tanpa Foto</span>
             </div>
           )}
@@ -75,15 +76,16 @@ export default function KosCard({
 
           {/* Photo Count Tag */}
           {photoCount > 1 && (
-            <span className="absolute bottom-2.5 right-2.5 text-[10px] font-semibold bg-slate-900/70 text-white px-2 py-0.5 rounded-md backdrop-blur-xs">
-              📷 {photoCount}
+            <span className="absolute bottom-2.5 right-2.5 text-[10px] font-semibold bg-slate-900/70 text-white px-2 py-0.5 rounded-md backdrop-blur-xs inline-flex items-center gap-1">
+              <FiCamera className="w-3 h-3" />
+              <span>{photoCount}</span>
             </span>
           )}
 
           {/* Distance Tag (if geocoded nearby) */}
           {distanceText && (
-            <span className="absolute top-2.5 right-2.5 text-[10px] font-bold bg-white/95 text-emerald-800 px-2 py-0.5 rounded-md backdrop-blur-xs shadow-xs flex items-center gap-0.5">
-              <span>📍</span>
+            <span className="absolute top-2.5 right-2.5 text-[10px] font-bold bg-white/95 text-emerald-800 px-2 py-0.5 rounded-md backdrop-blur-xs shadow-xs flex items-center gap-1">
+              <FiMapPin className="w-3 h-3 text-emerald-700 shrink-0" />
               <span>{distanceText}</span>
             </span>
           )}
@@ -102,7 +104,7 @@ export default function KosCard({
               <div className="flex items-center gap-1 shrink-0">
                 {kos.avg_rating > 0 ? (
                   <div className="flex items-center gap-1 font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md">
-                    <span>★</span>
+                    <FiStar className="w-3 h-3 fill-amber-400 text-amber-500 shrink-0" />
                     <span>{kos.avg_rating}</span>
                     {kos.total_reviews > 0 && (
                       <span className="text-[10px] font-normal text-slate-400">

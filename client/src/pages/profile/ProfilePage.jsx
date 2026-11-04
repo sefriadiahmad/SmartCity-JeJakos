@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiCheck } from 'react-icons/fi';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 
@@ -191,7 +191,8 @@ export default function ProfilePage() {
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
               {user?.role !== 'pencari' && user?.is_verified ? (
                 <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  ✓ Email Terverifikasi
+                  <FiCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Email Terverifikasi</span>
                 </span>
               ) : user?.role !== 'pencari' ? (
                 <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
@@ -205,7 +206,8 @@ export default function ProfilePage() {
               {user?.role === 'pemilik' && (
                 user?.is_approved ? (
                   <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    ✓ Disetujui Admin
+                    <FiCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Disetujui Admin</span>
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 border border-amber-200">

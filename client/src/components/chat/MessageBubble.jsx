@@ -1,3 +1,4 @@
+import { FiCheck } from 'react-icons/fi';
 import { getPhotoUrl } from '../../utils/imageUrl';
 
 export default function MessageBubble({ message, isOwn }) {
@@ -66,9 +67,14 @@ export default function MessageBubble({ message, isOwn }) {
                 className="font-bold tracking-tighter"
               >
                 {message.is_read ? (
-                  <span className="text-emerald-200 font-extrabold">✓✓</span>
+                  <span className="text-emerald-200 inline-flex items-center">
+                    <FiCheck className="w-3 h-3" />
+                    <FiCheck className="w-3 h-3 -ml-1.5" />
+                  </span>
                 ) : (
-                  <span>✓</span>
+                  <span className="inline-flex items-center">
+                    <FiCheck className="w-3 h-3" />
+                  </span>
                 )}
               </span>
             )}

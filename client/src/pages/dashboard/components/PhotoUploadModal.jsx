@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { FiX, FiTrash2 } from 'react-icons/fi';
 import api from '../../../services/api';
 import { getPhotoUrl } from '../../../utils/imageUrl';
 
@@ -132,9 +133,10 @@ export default function PhotoUploadModal({ isOpen, onClose, kos, onPhotosUpdated
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+            aria-label="Tutup"
+            className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
 
@@ -261,10 +263,11 @@ export default function PhotoUploadModal({ isOpen, onClose, kos, onPhotosUpdated
                       <button
                         type="button"
                         onClick={() => handleDeletePhoto(photo.id)}
-                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/90 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition shadow-sm hover:bg-red-700"
+                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/90 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition shadow-sm hover:bg-red-700 cursor-pointer"
                         title="Hapus foto"
+                        aria-label="Hapus foto"
                       >
-                        <span className="text-xs">🗑</span>
+                        <FiTrash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   );

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { FiSearch, FiSliders, FiUser, FiUsers, FiBookOpen } from 'react-icons/fi';
 import api from '../../services/api';
 
 const JAMBI_DISTRICTS = [
@@ -137,7 +138,7 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">
-                🔍
+                <FiSearch className="w-4 h-4 text-slate-400" />
               </span>
               <input
                 id="filter-q"
@@ -182,7 +183,7 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
               }`}
               title="Filter Lanjutan"
             >
-              <span>⚙️ Filter</span>
+              <span className="flex items-center gap-1.5"><FiSliders className="w-3.5 h-3.5" /> Filter</span>
               {activeFilterCount > 0 && (
                 <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold flex items-center justify-center">
                   {activeFilterCount}
@@ -217,7 +218,13 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
                   : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
               }`}
             >
-              {t === 'putra' ? '👦 Khusus Putra' : t === 'putri' ? '👧 Khusus Putri' : '👥 Campur'}
+              {t === 'putra' ? (
+                <span className="inline-flex items-center gap-1"><FiUser className="w-3 h-3" /> Khusus Putra</span>
+              ) : t === 'putri' ? (
+                <span className="inline-flex items-center gap-1"><FiUser className="w-3 h-3" /> Khusus Putri</span>
+              ) : (
+                <span className="inline-flex items-center gap-1"><FiUsers className="w-3 h-3" /> Campur</span>
+              )}
             </button>
           ))}
 
@@ -264,7 +271,7 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
             {/* Kampus / Titik Acuan Jambi (F-13) */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">
-                🎓 Hitung Jarak Terdekat Dari Kampus / Pusat Kota Jambi (F-13)
+                <span className="inline-flex items-center gap-1.5"><FiBookOpen className="w-4 h-4 text-emerald-700" /> Hitung Jarak Terdekat Dari Kampus / Pusat Kota Jambi (F-13)</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {CAMPUS_PRESETS.map((preset) => (

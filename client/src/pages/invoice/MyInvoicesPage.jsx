@@ -1,5 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  FiClock,
+  FiAlertTriangle,
+  FiCheckCircle,
+  FiCheck,
+  FiBell,
+  FiX,
+  FiSearch,
+  FiFileText,
+  FiMapPin,
+  FiCreditCard,
+} from 'react-icons/fi';
+import { FaBed } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import { socket, connectSocket } from '../../services/socket';
@@ -19,17 +32,17 @@ const STATUS_CONFIG = {
   unpaid: {
     label: 'Belum Dibayar',
     badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-    icon: '⏳',
+    icon: FiClock,
   },
   overdue: {
     label: 'Lewat Jatuh Tempo',
     badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
-    icon: '⚠️',
+    icon: FiAlertTriangle,
   },
   paid: {
     label: 'Lunas',
     badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    icon: '✓',
+    icon: FiCheckCircle,
   },
 };
 
@@ -177,7 +190,7 @@ export default function MyInvoicesPage() {
       {reminderToast && (
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start justify-between gap-3 shadow-md">
           <div className="flex items-start gap-2.5 text-xs">
-            <span className="text-xl">🔔</span>
+            <FiBell className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <p className="font-bold text-sm text-amber-900">{reminderToast.title}</p>
               <p className="text-amber-800 leading-relaxed">{reminderToast.message}</p>
@@ -186,9 +199,10 @@ export default function MyInvoicesPage() {
           <button
             type="button"
             onClick={() => setReminderToast(null)}
-            className="text-amber-600 hover:text-amber-800 font-bold text-sm cursor-pointer"
+            aria-label="Tutup"
+            className="text-amber-600 hover:text-amber-800 font-bold text-sm cursor-pointer p-0.5"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -208,7 +222,7 @@ export default function MyInvoicesPage() {
           to="/bookings"
           className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition shadow-xs self-start sm:self-auto cursor-pointer"
         >
-          <span>🛏️</span>
+          <FaBed className="w-4 h-4 text-emerald-600" />
           <span>Pemesanan Saya</span>
         </Link>
       </div>
@@ -294,7 +308,7 @@ export default function MyInvoicesPage() {
               className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
             />
             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-              🔍
+              <FiSearch className="w-3.5 h-3.5" />
             </span>
           </div>
         </div>
@@ -330,8 +344,8 @@ export default function MyInvoicesPage() {
         </div>
       ) : filteredInvoices.length === 0 ? (
         <div className="py-16 text-center bg-white rounded-3xl border border-dashed border-slate-200 shadow-xs space-y-3 p-8">
-          <div className="w-14 h-14 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center text-2xl mx-auto border border-slate-200">
-            🧾
+          <div className="w-14 h-14 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mx-auto border border-slate-200">
+            <FiFileText className="w-7 h-7 text-slate-300" />
           </div>
           <div className="space-y-1">
             <h3 className="font-bold text-sm text-slate-800">
@@ -350,8 +364,9 @@ export default function MyInvoicesPage() {
             const badge = STATUS_CONFIG[inv.status] || {
               label: inv.status,
               badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
-              icon: '•',
+              icon: FiClock,
             };
+            const BadgeIcon = badge.icon;
 
             const isUnpaid = inv.status === 'unpaid' || inv.status === 'overdue';
             const isPaying = payingId === inv.id;
@@ -379,7 +394,7 @@ export default function MyInvoicesPage() {
                   <span
                     className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border self-start sm:self-auto ${badge.badgeClass}`}
                   >
-                    <span>{badge.icon}</span>
+                    <BadgeIcon className="w-3.5 h-3.5 shrink-0" />
                     <span>{badge.label}</span>
                   </span>
                 </div>
@@ -407,8 +422,9 @@ export default function MyInvoicesPage() {
                     >
                       {inv.kos?.name}
                     </Link>
-                    <p className="text-slate-500 line-clamp-1">
-                      📍 {inv.kos?.address}, {inv.kos?.district}
+                    <p className="text-slate-500 line-clamp-1 flex items-center gap-1">
+                      <FiMapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="truncate">{inv.kos?.address}, {inv.kos?.district}</span>
                     </p>
 
                     <div className="flex flex-wrap items-center gap-3 pt-1">
@@ -422,14 +438,17 @@ export default function MyInvoicesPage() {
                     </div>
 
                     {inv.paid_at && (
-                      <p className="text-[11px] text-emerald-700 font-medium">
-                        ✓ Dibayar pada{' '}
-                        {new Date(inv.paid_at).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}{' '}
-                        via {inv.payment_method?.toUpperCase()}
+                      <p className="text-[11px] text-emerald-700 font-medium flex items-center gap-1">
+                        <FiCheck className="w-3.5 h-3.5 shrink-0" />
+                        <span>
+                          Dibayar pada{' '}
+                          {new Date(inv.paid_at).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}{' '}
+                          via {inv.payment_method?.toUpperCase()}
+                        </span>
                       </p>
                     )}
                   </div>
@@ -443,7 +462,7 @@ export default function MyInvoicesPage() {
                         onClick={() => handlePay(inv)}
                         className="w-full py-2.5 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                       >
-                        <span>💳</span>
+                        <FiCreditCard className="w-3.5 h-3.5" />
                         <span>{isPaying ? 'Menyiapkan...' : 'Bayar Sekarang'}</span>
                       </button>
                     ) : null}

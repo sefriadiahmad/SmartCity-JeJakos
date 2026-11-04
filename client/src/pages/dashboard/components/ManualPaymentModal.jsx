@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FiDollarSign, FiX, FiCreditCard, FiCheck } from 'react-icons/fi';
 import api from '../../../services/api';
 import { formatCurrency } from '../../../utils/formatCurrency';
 
@@ -52,7 +53,9 @@ export default function ManualPaymentModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
           <div className="flex items-center gap-2">
-            <span className="text-xl">💵</span>
+            <span className="text-xl text-emerald-600">
+              <FiDollarSign className="w-5 h-5" />
+            </span>
             <div>
               <h3 className="font-bold text-base text-slate-900">
                 Catat Pembayaran Manual
@@ -63,9 +66,10 @@ export default function ManualPaymentModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
-            ✕
+            <FiX className="w-4 h-4" />
           </button>
         </div>
 
@@ -118,7 +122,7 @@ export default function ManualPaymentModal({
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                <span>💵</span>
+                <FiDollarSign className="w-4 h-4" />
                 <span>Uang Tunai (Cash)</span>
               </button>
 
@@ -134,7 +138,7 @@ export default function ManualPaymentModal({
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                <span>🏦</span>
+                <FiCreditCard className="w-4 h-4" />
                 <span>Transfer Langsung</span>
               </button>
             </div>
@@ -190,7 +194,7 @@ export default function ManualPaymentModal({
               disabled={submitting}
               className="py-2.5 px-5 font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <span>✓</span>
+              <FiCheck className="w-4 h-4" />
               <span>{submitting ? 'Menyimpan...' : 'Tandai Lunas'}</span>
             </button>
           </div>

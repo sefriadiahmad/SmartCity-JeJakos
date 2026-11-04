@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FiHome, FiMapPin, FiStar, FiMessageSquare, FiArrowRight } from 'react-icons/fi';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { getPhotoUrl } from '../../utils/imageUrl';
 
@@ -52,7 +53,7 @@ export default function ChatbotKosCard({ kos, onAskAbout }) {
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 text-lg">
-              <span>🏠</span>
+              <FiHome className="w-6 h-6 text-slate-300" />
             </div>
           )}
 
@@ -80,7 +81,7 @@ export default function ChatbotKosCard({ kos, onAskAbout }) {
 
             {/* Address & Distance */}
             <p className="text-[11px] text-slate-500 truncate mt-0.5 flex items-center gap-1">
-              <span>📍</span>
+              <FiMapPin className="w-3 h-3 text-slate-400 shrink-0" />
               <span className="truncate">{kos.address}</span>
             </p>
           </div>
@@ -102,7 +103,8 @@ export default function ChatbotKosCard({ kos, onAskAbout }) {
               )}
               {kos.avg_rating > 0 && (
                 <span className="font-semibold text-amber-600 flex items-center gap-0.5">
-                  ★ {Number(kos.avg_rating).toFixed(1)}
+                  <FiStar className="w-3 h-3 fill-amber-400 text-amber-500 shrink-0" />
+                  <span>{Number(kos.avg_rating).toFixed(1)}</span>
                 </span>
               )}
             </div>
@@ -150,10 +152,10 @@ export default function ChatbotKosCard({ kos, onAskAbout }) {
           <button
             type="button"
             onClick={() => onAskAbout(`Ceritakan lebih detail fasilitas dan aturan di ${kos.name}`)}
-            className="px-2 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition text-center cursor-pointer flex items-center justify-center gap-1 truncate"
+            className="px-2 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition text-center cursor-pointer flex items-center justify-center gap-1.5 truncate"
             title={`Tanya info lebih lanjut tentang ${kos.name}`}
           >
-            <span>💬</span>
+            <FiMessageSquare className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">Tanya Kos Ini</span>
           </button>
         ) : (
@@ -165,7 +167,7 @@ export default function ChatbotKosCard({ kos, onAskAbout }) {
           className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition text-center flex items-center justify-center gap-1 shadow-2xs group-hover:bg-emerald-700"
         >
           <span>Lihat Kamar</span>
-          <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+          <FiArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
     </div>

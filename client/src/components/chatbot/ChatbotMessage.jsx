@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FiUser, FiCpu, FiAlertCircle, FiHome } from 'react-icons/fi';
 import ChatbotKosCard from './ChatbotKosCard';
 
 /**
@@ -142,7 +143,7 @@ export default function ChatbotMessage({ message, onPromptSelect }) {
               : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
           }`}
         >
-          {isUser ? '👤' : '🤖'}
+          {isUser ? <FiUser className="w-4 h-4" /> : <FiCpu className="w-4 h-4" />}
         </div>
 
         {/* Bubble & Cards Container */}
@@ -160,7 +161,7 @@ export default function ChatbotMessage({ message, onPromptSelect }) {
             {/* Fallback relaxation note */}
             {message.fallback_applied && message.fallback_reason && (
               <div className="mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-amber-900 bg-amber-50/90 p-2.5 rounded-xl border border-amber-200/60 leading-normal flex items-start gap-1.5">
-                <span className="shrink-0 text-sm">💡</span>
+                <FiAlertCircle className="shrink-0 w-4 h-4 text-amber-600 mt-0.5" />
                 <div>
                   <strong>Penyesuaian Kriteria:</strong> {message.fallback_reason}
                 </div>
@@ -172,8 +173,8 @@ export default function ChatbotMessage({ message, onPromptSelect }) {
           {hasKosCards && (
             <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between px-1">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                  <span>🏠</span>
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <FiHome className="w-3.5 h-3.5 text-slate-500" />
                   <span>Rekomendasi Kos Resmi ({message.kos.length})</span>
                 </span>
                 <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">

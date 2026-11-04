@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import {
+  FiAward,
+  FiBookOpen,
+  FiMapPin,
+  FiUser,
+  FiDollarSign,
+  FiStar,
+  FiCpu,
+  FiShield,
+} from 'react-icons/fi';
 import KosFilter from '../../components/kos/KosFilter';
 import KosCard from '../../components/kos/KosCard';
 import api from '../../services/api';
@@ -49,7 +59,7 @@ export default function HomePage() {
       <section className="relative bg-gradient-to-b from-emerald-50/80 via-teal-50/30 to-white py-12 sm:py-20 px-4 sm:px-6 lg:px-8 border-b border-slate-100">
         <div className="max-w-5xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 py-1 px-3.5 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-            <span>🏛️ Jambi Smart City Challenge 2026</span>
+            <span className="inline-flex items-center gap-1.5"><FiAward className="w-3.5 h-3.5 text-emerald-700" /> Jambi Smart City Challenge 2026</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
@@ -74,37 +84,42 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => handleQuickTagClick({ q: 'Mendalo', campus: 'UNJA Mendalo', lat: -1.6140, lng: 103.5200, sort: 'nearest' })}
-              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition shadow-2xs"
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition shadow-2xs inline-flex items-center gap-1.5"
             >
-              🎓 Dekat UNJA Mendalo
+              <FiBookOpen className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Dekat UNJA Mendalo</span>
             </button>
             <button
               type="button"
               onClick={() => handleQuickTagClick({ q: 'Sungai Duren', campus: 'UIN STS Jambi', lat: -1.6065, lng: 103.5095, sort: 'nearest' })}
-              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition shadow-2xs"
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition shadow-2xs inline-flex items-center gap-1.5"
             >
-              🕌 Dekat UIN STS
+              <FiMapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Dekat UIN STS</span>
             </button>
             <button
               type="button"
               onClick={() => handleQuickTagClick({ district: 'Danau Teluk', q: 'UNBARI' })}
-              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition shadow-2xs"
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition shadow-2xs inline-flex items-center gap-1.5"
             >
-              📚 Sekitar UNBARI
+              <FiBookOpen className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Sekitar UNBARI</span>
             </button>
             <button
               type="button"
               onClick={() => handleQuickTagClick({ type: 'putri' })}
-              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-pink-700 hover:border-pink-500 transition shadow-2xs"
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-pink-700 hover:border-pink-500 transition shadow-2xs inline-flex items-center gap-1.5"
             >
-              👧 Khusus Putri
+              <FiUser className="w-3.5 h-3.5 text-pink-600" />
+              <span>Khusus Putri</span>
             </button>
             <button
               type="button"
               onClick={() => handleQuickTagClick({ max_price: 700000 })}
-              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-emerald-700 hover:border-emerald-500 transition shadow-2xs"
+              className="px-3 py-1 rounded-full bg-white border border-slate-200 text-emerald-700 hover:border-emerald-500 transition shadow-2xs inline-flex items-center gap-1.5"
             >
-              💰 Di Bawah 700rb
+              <FiDollarSign className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Di Bawah 700rb</span>
             </button>
           </div>
         </div>
@@ -115,7 +130,7 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">
-              <span>🌟 Rekomendasi Teratas</span>
+              <span className="inline-flex items-center gap-1"><FiStar className="w-3.5 h-3.5 fill-amber-400 text-amber-500" /> Rekomendasi Teratas</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
               Kos Populer di Jambi
@@ -155,8 +170,9 @@ export default function HomePage() {
       <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-emerald-800 via-teal-800 to-slate-900 text-white relative overflow-hidden shadow-xl">
           <div className="relative z-10 max-w-2xl space-y-3">
-            <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold tracking-wider uppercase">
-              🤖 Fitur Smart City JeJakos
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold tracking-wider uppercase">
+              <FiCpu className="w-3.5 h-3.5 text-emerald-300" />
+              <span>Fitur Smart City JeJakos</span>
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Bingung Memilih Kos? Tanya JeJakos Bot!
@@ -170,7 +186,7 @@ export default function HomePage() {
                 onClick={() => window.dispatchEvent(new CustomEvent('open-chatbot'))}
                 className="px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-extrabold text-xs transition shadow-md flex items-center gap-2 cursor-pointer"
               >
-                <span>🤖</span>
+                <FiCpu className="w-4 h-4" />
                 <span>Buka Tanya JeJakos</span>
               </button>
               <button
@@ -178,7 +194,7 @@ export default function HomePage() {
                 onClick={() => handleSearch({ q: 'WiFi AC Mendalo', max_price: 800000 })}
                 className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition border border-white/20 cursor-pointer"
               >
-                Contoh: "Kos Dekat UNJA Ada AC & WiFi"
+                Contoh: &ldquo;Kos Dekat UNJA Ada AC &amp; WiFi&rdquo;
               </button>
             </div>
           </div>
@@ -198,8 +214,8 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 text-2xl flex items-center justify-center font-bold">
-              📍
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+              <FiMapPin className="w-6 h-6 text-emerald-700" />
             </div>
             <h3 className="text-base font-bold text-slate-900">Peta & Jarak Geospasial Akurat</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -208,8 +224,8 @@ export default function HomePage() {
           </div>
 
           <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
-            <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 text-2xl flex items-center justify-center font-bold">
-              🛡️
+            <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
+              <FiShield className="w-6 h-6 text-teal-700" />
             </div>
             <h3 className="text-base font-bold text-slate-900">Listing Terverifikasi</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -218,8 +234,8 @@ export default function HomePage() {
           </div>
 
           <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
-            <div className="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-700 text-2xl flex items-center justify-center font-bold">
-              ⭐
+            <div className="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold">
+              <FiStar className="w-6 h-6 text-cyan-700 fill-cyan-400" />
             </div>
             <h3 className="text-base font-bold text-slate-900">Rekam Jejak Transparan</h3>
             <p className="text-xs text-slate-600 leading-relaxed">

@@ -302,7 +302,15 @@ export default function PemilikDashboard() {
                                     : 'bg-amber-100 text-amber-800'
                                 }`}
                               >
-                                {kos.is_approved ? '✓ Terverifikasi' : 'Menunggu Approval'}
+                                {kos.is_approved ? (
+                                  <span className="inline-flex items-center gap-1">
+                                    <FiCheckCircle className="w-3 h-3" /> Terverifikasi
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1">
+                                    <FiClock className="w-3 h-3" /> Menunggu Approval
+                                  </span>
+                                )}
                               </span>
                             </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FiAlertTriangle } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, AreaChart, Area } from 'recharts';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
@@ -122,7 +123,7 @@ export default function PemilikRingkasan() {
         {/* Unapproved Banner */}
         {user?.role === 'pemilik' && !user?.is_approved && (
           <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-xs">
-            <span className="text-xl">⚠️</span>
+            <FiAlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-xs leading-relaxed">
               <p className="font-bold text-sm">Akun Dalam Verifikasi Admin</p>
               <p className="mt-0.5">Akun pemilik Anda sedang ditinjau. Listing kos akan dipublikasikan setelah verifikasi admin.</p>
