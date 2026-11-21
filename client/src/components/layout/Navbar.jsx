@@ -10,9 +10,9 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="text-xl font-extrabold tracking-tight text-emerald-700">JeJakos</span>
-          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">Jambi</span>
+        <Link to="/" className="flex items-center gap-3">
+          <img src="/logo_jejakos.png" alt="JeJakos" className="h-18 w-18 rounded-xl object-contain" />
+          <span><strong className="block text-lg leading-tight text-emerald-700">JeJakos</strong><span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700">Jambi</span></span>
         </Link>
         <nav className="hidden items-center gap-1 text-sm font-semibold sm:flex">
           <Link to="/" className="hidden px-3 py-2 text-slate-600 hover:text-emerald-700 sm:block">Beranda</Link>

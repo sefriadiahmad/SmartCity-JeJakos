@@ -11,6 +11,7 @@ import SearchResultsPage from './pages/kos/SearchResultsPage';
 import KosDetailPage from './pages/kos/KosDetailPage';
 import PemilikDashboard from './pages/dashboard/PemilikDashboard';
 import PemilikRingkasan from './pages/dashboard/PemilikRingkasan';
+import PencariRingkasan from './pages/dashboard/PencariRingkasan';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UsersTab from './pages/admin/UsersTab';
 import KosTab from './pages/admin/KosTab';
@@ -51,6 +52,9 @@ export default function App() {
         <Route path="/bookings" element={<MyBookingsPage />} />
         <Route path="/dashboard/search" element={<SearchResultsPage />} />
         <Route path="/invoices" element={<MyInvoicesPage />} />
+        <Route element={<ProtectedRoute allowedRoles={['pencari']} />}>
+          <Route path="/dashboard/ringkasan-pencari" element={<PencariRingkasan />} />
+        </Route>
         <Route path="/complaints" element={<ComplaintsPage />} />
         <Route element={<ProtectedRoute allowedRoles={['pemilik', 'admin']} />}>
           <Route path="/dashboard/ringkasan" element={<PemilikRingkasan />} />
