@@ -2,16 +2,16 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-400 py-10 mt-auto border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left sm:flex sm:justify-between sm:items-center">
+    <footer className="mt-auto border-t border-[#31564c] bg-[#18352f] py-10 text-[#c6d7cf]">
+      <div className="mx-auto max-w-7xl px-4 text-center sm:flex sm:items-center sm:justify-between sm:px-6 sm:text-left lg:px-8">
         <div>
-          <p className="text-white font-semibold text-lg">JeJakos</p>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="font-semibold text-lg text-[#fffcf7]">JeJakos</p>
+          <p className="mt-1 text-xs text-[#c6d7cf]">
             Digitalisasi Rekam Jejak & Pemasaran Hunian Sewa Provinsi Jambi
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">Jambi Smart City Application Challenge 2026</p>
+          <p className="mt-0.5 text-xs text-[#91b3a6]">Jambi Smart City Application Challenge 2026</p>
         </div>
-        <div className="mt-4 sm:mt-0 text-xs text-slate-500">
+        <div className="mt-4 text-xs text-[#91b3a6] sm:mt-0">
           &copy; {CURRENT_YEAR} Tim Tri Nova - Universitas Nurdin Hamzah
         </div>
       </div>

@@ -26,7 +26,7 @@ import ChatbotWidget from './components/chatbot/ChatbotWidget';
 import { AuthProvider } from './context/AuthContext';
 
 function PublicLayout() {
-  return <div className="flex min-h-screen flex-col bg-slate-50 text-slate-800"><Navbar /><main className="flex flex-1 flex-col"><Outlet /></main><Footer /><ChatbotWidget /></div>;
+  return <div className="flex min-h-screen flex-col bg-[#fffcf7] text-[#18352f]"><Navbar /><main className="flex flex-1 flex-col"><Outlet /></main><Footer /><ChatbotWidget /></div>;
 }
 
 function AuthLayout() {

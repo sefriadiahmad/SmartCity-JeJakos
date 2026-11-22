@@ -1,12 +1,73 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* Mobile-first base layer */
+:root {
+  --jk-ink: #18352f;
+  --jk-forest: #1f6b58;
+  --jk-leaf: #78a96b;
+  --jk-sand: #f5efe4;
+  --jk-clay: #c9784a;
+  --jk-mist: #e6eee9;
+  --jk-paper: #fffcf7;
+  --jk-muted: #60736d;
+  --jk-border: #dce7e1;
+  --jk-danger: #b84c4c;
+  --jk-radius-card: 20px;
+  --jk-radius-control: 14px;
+  --jk-shadow-card: 0 14px 32px -24px rgba(24, 53, 47, 0.42);
+  --jk-shadow-float: 0 20px 48px -28px rgba(24, 53, 47, 0.5);
+}
+
 html, body, #root {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--jk-paper);
+  color: var(--jk-ink);
+}
+
+body {
+  text-rendering: optimizeLegibility;
+}
+
+button, a, input, select, textarea {
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid rgba(201, 120, 74, 0.45);
+  outline-offset: 3px;
+}
+
+.jk-card {
+  border: 1px solid var(--jk-border);
+  border-radius: var(--jk-radius-card);
+  background: var(--jk-paper);
+  box-shadow: var(--jk-shadow-card);
+}
+
+.jk-card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--jk-shadow-float);
+}
+
+.jk-label {
+  color: var(--jk-forest);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 /* Leaflet map overrides */

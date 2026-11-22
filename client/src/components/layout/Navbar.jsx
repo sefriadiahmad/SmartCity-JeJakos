@@ -8,21 +8,22 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-3">
-          <img src="/logo_jejakos.png" alt="JeJakos" className="h-18 w-18 rounded-xl object-contain" />
-          <span><strong className="block text-lg leading-tight text-emerald-700">JeJakos</strong><span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700">Jambi</span></span>
+    <header className="sticky top-0 z-50 border-b border-[#dce7e1] bg-[#fffcf7]/95 backdrop-blur">
+      <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="flex items-center gap-2.5 rounded-xl">
+          <img src="/logo_jejakos.png" alt="JeJakos" className="h-12 w-12 rounded-xl object-contain" />
+          <span><strong className="block text-lg leading-tight text-[#18352f]">JeJakos</strong><span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#1f6b58]">Jambi</span></span>
         </Link>
         <nav className="hidden items-center gap-1 text-sm font-semibold sm:flex">
-          <Link to="/" className="hidden px-3 py-2 text-slate-600 hover:text-emerald-700 sm:block">Beranda</Link>
-          <Link to="/kos" className="hidden px-3 py-2 text-slate-600 hover:text-emerald-700 sm:block">Cari Kos</Link>
+          <Link to="/" className="hidden rounded-xl px-3 py-2 text-[#60736d] hover:bg-[#e6eee9] hover:text-[#18352f] sm:block">Beranda</Link>
+          <Link to="/kos" className="hidden rounded-xl px-3 py-2 text-[#60736d] hover:bg-[#e6eee9] hover:text-[#18352f] sm:block">Cari Kos</Link>
           {isAuthenticated ? (
-            <Link to="/bookings" className="rounded-xl bg-emerald-700 px-3.5 py-2 text-white shadow-sm hover:bg-emerald-800">Masuk Ke Dashboard</Link>
+            <Link to="/bookings" className="rounded-[14px] bg-[#1f6b58] px-4 py-2.5 text-white shadow-sm hover:-translate-y-0.5 hover:bg-[#18352f]">Masuk Ke Dashboard</Link>
           ) : (
             <>
-              <Link to="/login" className="px-3 py-2 text-slate-700 hover:text-emerald-700">Masuk</Link>
-              <Link to="/register" className="rounded-xl bg-emerald-700 px-3.5 py-2 text-white shadow-sm hover:bg-emerald-800">Daftar</Link>
+               <Link to="/login" className="rounded-xl px-3 py-2 text-[#60736d] hover:bg-[#e6eee9] hover:text-[#18352f]">Masuk</Link>
+              <Link to="/register" className="rounded-[14px] bg-[#1f6b58] px-4 py-2.5 text-white shadow-sm hover:-translate-y-0.5 hover:bg-[#18352f]">Daftar</Link>
+
             </>
           )}
         </nav>
