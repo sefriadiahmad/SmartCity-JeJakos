@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { FiCheck, FiClock, FiStar } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 
-const COLORS = ['#059669', '#0284c7', '#d946ef', '#f59e0b', '#ef4444'];
-const TYPE_COLORS = { putra: '#2563eb', putri: '#ec4899', campur: '#8b5cf6' };
+const COLORS = ['#1f6b58', '#4a7c9b', '#c9784a', '#d4860b', '#b84c4c'];
+const TYPE_COLORS = { putra: '#1f6b58', putri: '#c9784a', campur: '#18352f' };
 
 function formatMonth(ym) {
   const [y, m] = ym.split('-');
@@ -18,28 +18,34 @@ export default function AdminDashboard() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
+  const loadDashboard = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
+    api.get('/admin/dashboard')
+      .then((res) => setData(res.data))
+      .catch(() => setLoadError(true))
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
-    let active = true;
-    api.get('/admin/dashboard')
-      .then((res) => { if (active) setData(res.data); })
-      .catch(() => {})
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, []);
+    loadDashboard();
+  }, [loadDashboard]);
 
   if (loading) {
     return (
-      <div className="flex-1 bg-slate-50 py-20 flex justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-4 border-emerald-600 border-t-transparent" />
+      <div className="flex-1 bg-[var(--jk-surface)] py-20 flex justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#1f6b58] border-t-transparent" />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex-1 bg-slate-50 py-20 text-center text-sm text-slate-500">
-        Gagal memuat data ringkasan.
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 bg-[var(--jk-surface)] py-20 text-center text-sm text-[#60736d]">
+        <p>{loadError ? 'Gagal memuat data ringkasan.' : 'Data ringkasan belum tersedia.'}</p>
+        {loadError && <button type="button" onClick={loadDashboard} className="min-h-11 rounded-xl bg-[#1f6b58] px-4 py-2 font-bold text-white hover:bg-[#18352f]">Coba lagi</button>}
       </div>
     );
   }
@@ -76,19 +82,19 @@ export default function AdminDashboard() {
   const roleLabels = { admin: 'Admin', pemilik: 'Pemilik', pencari: 'Pencari' };
 
   return (
-    <div className="flex-1 bg-slate-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="flex-1 bg-[#f5f7f3] py-8">
+      <div className="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
         {/* Welcome Header */}
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 text-xs font-bold uppercase rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+            <span className="px-2.5 py-0.5 text-xs font-bold uppercase rounded-full bg-[#e6eee9] text-[#1f6b58] border border-[#b9d5c7]">
               Panel Admin
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+          <p className="jk-label mb-2">Pusat kendali platform</p><h1 className="font-[family-name:var(--font-display)] text-3xl text-[#18352f] sm:text-4xl">
             Selamat Datang Kembali, {user?.name || 'Admin'}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 mt-1">
+          <p className="text-xs sm:text-sm text-[#60736d] mt-1">
             Berikut ringkasan platform JeJakos Jambi saat ini. Kelola pengguna, kos, kamar, dan ulasan melalui menu sidebar.
           </p>
         </div>
@@ -99,11 +105,11 @@ export default function AdminDashboard() {
             <Link
               key={c.label}
               to={c.to}
-              className={`p-4 rounded-2xl border transition hover:shadow-md shadow-xs ${c.warn ? 'bg-amber-50/50 border-amber-200' : 'bg-white border-slate-200'}`}
+              className={`jk-card jk-card-interactive p-4 ${c.warn ? 'border-[#e7c68a] bg-[var(--jk-rating-bg)]' : ''}`}
             >
-              <p className={`text-[11px] font-semibold uppercase tracking-wider ${c.warn ? 'text-amber-800' : 'text-slate-500'}`}>{c.label}</p>
-              <p className={`text-xl font-bold mt-1 ${c.warn ? 'text-amber-700' : 'text-slate-900'}`}>{c.value}</p>
-              <p className={`text-[10px] mt-0.5 ${c.warn ? 'text-amber-600' : 'text-slate-400'}`}>{c.sub}</p>
+              <p className={`text-[11px] font-semibold uppercase tracking-wider ${c.warn ? 'text-[var(--jk-rating)]' : 'text-[#60736d]'}`}>{c.label}</p>
+              <p className={`text-xl font-bold mt-1 ${c.warn ? 'text-[var(--jk-rating)]' : 'text-[#18352f]'}`}>{c.value}</p>
+              <p className={`text-[10px] mt-0.5 ${c.warn ? 'text-[var(--jk-rating)]' : 'text-[#60736d]'}`}>{c.sub}</p>
             </Link>
           ))}
         </div>
@@ -111,8 +117,8 @@ export default function AdminDashboard() {
         {/* Charts Row 1: Trend + Kos by Type */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Trend Chart */}
-          <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-900 mb-4">Tren Pendaftaran (6 Bulan Terakhir)</h3>
+          <div className="lg:col-span-2 jk-chart-card">
+            <h3 className="text-sm font-bold text-[#18352f] mb-4">Tren Pendaftaran (6 Bulan Terakhir)</h3>
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={trendData}>
@@ -121,18 +127,18 @@ export default function AdminDashboard() {
                   <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                   <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Line type="monotone" dataKey="pengguna" name="Pengguna Baru" stroke="#059669" strokeWidth={2} dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="kos" name="Kos Baru" stroke="#0284c7" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="pengguna" name="Pengguna Baru" stroke="var(--jk-chart-1)" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="kos" name="Kos Baru" stroke="var(--jk-chart-4)" strokeWidth={2} dot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-xs text-slate-400 py-12 text-center">Belum ada data tren</p>
+              <p className="text-xs text-[#60736d] py-12 text-center">Belum ada data tren</p>
             )}
           </div>
 
           {/* Kos by Type Pie */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-900 mb-4">Kos berdasarkan Tipe</h3>
+          <div className="jk-chart-card">
+            <h3 className="text-sm font-bold text-[#18352f] mb-4">Kos berdasarkan Tipe</h3>
             {kosByType.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
@@ -145,7 +151,7 @@ export default function AdminDashboard() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-xs text-slate-400 py-12 text-center">Belum ada data</p>
+              <p className="text-xs text-[#60736d] py-12 text-center">Belum ada data</p>
             )}
           </div>
         </div>
@@ -153,8 +159,8 @@ export default function AdminDashboard() {
         {/* Charts Row 2: Users by Role + Rooms + Rating Distribution */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Users by Role */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-900 mb-4">Pengguna berdasarkan Role</h3>
+          <div className="jk-chart-card">
+            <h3 className="text-sm font-bold text-[#18352f] mb-4">Pengguna berdasarkan Role</h3>
             {usersByRole.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
@@ -167,18 +173,18 @@ export default function AdminDashboard() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-xs text-slate-400 py-12 text-center">Belum ada data</p>
+              <p className="text-xs text-[#60736d] py-12 text-center">Belum ada data</p>
             )}
           </div>
 
           {/* Room Availability */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-900 mb-4">Ketersediaan Kamar</h3>
+          <div className="jk-chart-card">
+            <h3 className="text-sm font-bold text-[#18352f] mb-4">Ketersediaan Kamar</h3>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie data={roomsPie} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" label={({ name, value }) => `${name} (${value})`} labelLine={false}>
-                  <Cell fill="#059669" />
-                  <Cell fill="#cbd5e1" />
+                  <Cell fill="var(--jk-chart-1)" />
+                  <Cell fill="var(--jk-border)" />
                 </Pie>
                 <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
               </PieChart>
@@ -186,8 +192,8 @@ export default function AdminDashboard() {
           </div>
 
           {/* Rating Distribution */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-900 mb-4">Distribusi Rating Ulasan</h3>
+          <div className="jk-chart-card">
+            <h3 className="text-sm font-bold text-[#18352f] mb-4">Distribusi Rating Ulasan</h3>
             {ratingDist.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={ratingDist}>
@@ -195,26 +201,26 @@ export default function AdminDashboard() {
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                   <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-                  <Bar dataKey="value" name="Jumlah" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="value" name="Jumlah" fill="var(--jk-chart-2)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-xs text-slate-400 py-12 text-center">Belum ada ulasan</p>
+              <p className="text-xs text-[#60736d] py-12 text-center">Belum ada ulasan</p>
             )}
           </div>
         </div>
 
         {/* Kos by District Bar Chart */}
         {kosByDistrict.length > 0 && (
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-900 mb-4">Kos berdasarkan Kecamatan (Top 10)</h3>
+          <div className="jk-chart-card">
+            <h3 className="text-sm font-bold text-[#18352f] mb-4">Kos berdasarkan Kecamatan (Top 10)</h3>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={kosByDistrict} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={120} />
                 <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-                <Bar dataKey="value" name="Jumlah Kos" fill="#059669" radius={[0, 6, 6, 0]} />
+                <Bar dataKey="value" name="Jumlah Kos" fill="var(--jk-chart-1)" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -223,39 +229,39 @@ export default function AdminDashboard() {
         {/* Preview Tables */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Latest Users */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900">Pengguna Terbaru</h3>
-              <Link to="/admin/users" className="text-xs font-semibold text-emerald-700 hover:underline">Lihat Semua →</Link>
+          <div className="jk-chart-card overflow-hidden p-0">
+            <div className="px-5 py-4 border-b border-[#dce7e1] flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[#18352f]">Pengguna Terbaru</h3>
+              <Link to="/admin/users" className="text-xs font-semibold text-[#1f6b58] hover:underline">Lihat Semua →</Link>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-slate-50/75 text-slate-600 text-[10px] font-semibold uppercase tracking-wider">
+                  <tr className="jk-table-header">
                     <th className="py-2.5 px-4 text-left">Nama</th>
                     <th className="py-2.5 px-4 text-left">Role</th>
                     <th className="py-2.5 px-4 text-left">Status</th>
                     <th className="py-2.5 px-4 text-left">Terdaftar</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#dce7e1]">
                   {(data.latestUsers || []).map((u) => (
                     <tr key={u.id} className="hover:bg-slate-50/50">
                       <td className="py-2.5 px-4">
-                        <p className="font-semibold text-slate-900">{u.name || 'Tanpa Nama'}</p>
-                        <p className="text-[10px] text-slate-400">{u.email}</p>
+                        <p className="font-semibold text-[#18352f]">{u.name || 'Tanpa Nama'}</p>
+                        <p className="text-[10px] text-[#60736d]">{u.email}</p>
                       </td>
                       <td className="py-2.5 px-4">
-                        <span className={`px-1.5 py-0.5 rounded-full font-bold text-[10px] uppercase ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : u.role === 'pemilik' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}`}>{u.role}</span>
+                        <span className={`px-1.5 py-0.5 rounded-full font-bold text-[10px] uppercase ${u.role === 'admin' ? 'bg-[#f5efe4] text-[#c9784a]' : u.role === 'pemilik' ? 'bg-[#e6eee9] text-[#1f6b58]' : 'bg-[#e6eee9] text-[#31564c]'}`}>{u.role}</span>
                       </td>
                       <td className="py-2.5 px-4">
                         {u.role === 'pemilik' ? (
                           u.is_approved
-                            ? <span className="inline-flex items-center gap-1 text-emerald-700 font-medium text-[10px]"><FiCheck className="w-3 h-3" /> Disetujui</span>
-                            : <span className="inline-flex items-center gap-1 text-amber-700 font-medium text-[10px]"><FiClock className="w-3 h-3" /> Pending</span>
-                        ) : <span className="text-slate-400 text-[10px]">—</span>}
+                            ? <span className="inline-flex items-center gap-1 text-[#1f6b58] font-medium text-[10px]"><FiCheck className="w-3 h-3" /> Disetujui</span>
+                            : <span className="inline-flex items-center gap-1 text-[var(--jk-rating)] font-medium text-[10px]"><FiClock className="w-3 h-3" /> Pending</span>
+                        ) : <span className="text-[#60736d] text-[10px]">—</span>}
                       </td>
-                      <td className="py-2.5 px-4 text-slate-500 text-[10px] whitespace-nowrap">
+                      <td className="py-2.5 px-4 text-[#60736d] text-[10px] whitespace-nowrap">
                         {u.created_at ? new Date(u.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
                       </td>
                     </tr>
@@ -266,35 +272,35 @@ export default function AdminDashboard() {
           </div>
 
           {/* Latest Kos */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900">Kos Terbaru</h3>
-              <Link to="/admin/kos" className="text-xs font-semibold text-emerald-700 hover:underline">Lihat Semua →</Link>
+          <div className="jk-chart-card overflow-hidden p-0">
+            <div className="px-5 py-4 border-b border-[#dce7e1] flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[#18352f]">Kos Terbaru</h3>
+              <Link to="/admin/kos" className="text-xs font-semibold text-[#1f6b58] hover:underline">Lihat Semua →</Link>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-slate-50/75 text-slate-600 text-[10px] font-semibold uppercase tracking-wider">
+                  <tr className="jk-table-header">
                     <th className="py-2.5 px-4 text-left">Nama Kos</th>
                     <th className="py-2.5 px-4 text-left">Tipe</th>
                     <th className="py-2.5 px-4 text-left">Kecamatan</th>
                     <th className="py-2.5 px-4 text-left">Verifikasi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#dce7e1]">
                   {(data.latestKos || []).map((k) => (
                     <tr key={k.id} className="hover:bg-slate-50/50">
                       <td className="py-2.5 px-4">
-                        <Link to={`/kos/${k.id}`} target="_blank" className="font-semibold text-slate-900 hover:text-emerald-600">{k.name}</Link>
+                        <Link to={`/kos/${k.id}`} target="_blank" className="font-semibold text-[#18352f] hover:text-[#1f6b58]">{k.name}</Link>
                       </td>
                       <td className="py-2.5 px-4">
-                        <span className={`px-1.5 py-0.5 rounded-full font-bold text-[10px] uppercase ${k.type === 'putra' ? 'bg-blue-100 text-blue-800' : k.type === 'putri' ? 'bg-pink-100 text-pink-800' : 'bg-purple-100 text-purple-800'}`}>{k.type}</span>
+                        <span className={`px-1.5 py-0.5 rounded-full font-bold text-[10px] uppercase ${k.type === 'putra' ? 'bg-[#e6eee9] text-[#1f6b58]' : k.type === 'putri' ? 'bg-[#f5efe4] text-[#c9784a]' : 'bg-[#e6eee9] text-[#18352f]'}`}>{k.type}</span>
                       </td>
-                      <td className="py-2.5 px-4 text-slate-600">{k.district || '-'}</td>
+                      <td className="py-2.5 px-4 text-[#60736d]">{k.district || '-'}</td>
                       <td className="py-2.5 px-4">
                         {k.is_approved
-                          ? <span className="inline-flex items-center gap-1 text-emerald-700 font-medium text-[10px]"><FiCheck className="w-3 h-3" /> Terverifikasi</span>
-                          : <span className="inline-flex items-center gap-1 text-amber-700 font-medium text-[10px]"><FiClock className="w-3 h-3" /> Menunggu</span>}
+                          ? <span className="inline-flex items-center gap-1 text-[#1f6b58] font-medium text-[10px]"><FiCheck className="w-3 h-3" /> Terverifikasi</span>
+                          : <span className="inline-flex items-center gap-1 text-[var(--jk-rating)] font-medium text-[10px]"><FiClock className="w-3 h-3" /> Menunggu</span>}
                       </td>
                     </tr>
                   ))}
@@ -305,15 +311,15 @@ export default function AdminDashboard() {
         </div>
 
         {/* Latest Reviews */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900">Ulasan Terbaru</h3>
-            <Link to="/admin/reviews" className="text-xs font-semibold text-emerald-700 hover:underline">Lihat Semua →</Link>
+          <div className="jk-chart-card overflow-hidden p-0">
+          <div className="px-5 py-4 border-b border-[#dce7e1] flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[#18352f]">Ulasan Terbaru</h3>
+            <Link to="/admin/reviews" className="text-xs font-semibold text-[#1f6b58] hover:underline">Lihat Semua →</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-slate-50/75 text-slate-600 text-[10px] font-semibold uppercase tracking-wider">
+                <tr className="bg-[#f5f7f3] text-[#60736d] text-[10px] font-semibold uppercase tracking-wider">
                   <th className="py-2.5 px-4 text-left">Penyewa</th>
                   <th className="py-2.5 px-4 text-left">Kos</th>
                   <th className="py-2.5 px-4 text-left">Rating</th>
@@ -321,23 +327,23 @@ export default function AdminDashboard() {
                   <th className="py-2.5 px-4 text-left">Tanggal</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#dce7e1]">
                 {(data.latestReviews || []).map((rv) => (
                   <tr key={rv.id} className="hover:bg-slate-50/50">
-                    <td className="py-2.5 px-4 font-semibold text-slate-900">{rv.user_name}</td>
-                    <td className="py-2.5 px-4 text-emerald-800 font-medium">{rv.kos_name}</td>
+                    <td className="py-2.5 px-4 font-semibold text-[#18352f]">{rv.user_name}</td>
+                    <td className="py-2.5 px-4 text-[#1f6b58] font-medium">{rv.kos_name}</td>
                     <td className="py-2.5 px-4">
                       <span className="inline-flex items-center gap-0.5 text-amber-400">
                         {[1, 2, 3, 4, 5].map((s) => (
                           <FiStar
                             key={s}
-                            className={`w-3 h-3 ${s <= rv.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`}
+                            className={`w-3 h-3 ${s <= rv.rating ? 'fill-[var(--jk-rating)] text-[var(--jk-rating)]' : 'text-[#dce7e1]'}`}
                           />
                         ))}
                       </span>
                     </td>
-                    <td className="py-2.5 px-4 text-slate-600 max-w-xs truncate">{rv.content || <span className="italic text-slate-400">—</span>}</td>
-                    <td className="py-2.5 px-4 text-slate-500 text-[10px] whitespace-nowrap">
+                    <td className="py-2.5 px-4 text-[#60736d] max-w-xs truncate">{rv.content || <span className="italic text-[#60736d]">—</span>}</td>
+                    <td className="py-2.5 px-4 text-[#60736d] text-[10px] whitespace-nowrap">
                       {rv.created_at ? new Date(rv.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
                     </td>
                   </tr>

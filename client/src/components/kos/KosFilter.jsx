@@ -127,18 +127,18 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
   };
 
   return (
-    <div className="w-full bg-white rounded-3xl shadow-xl border border-slate-200/80 p-4 sm:p-6 transition">
+    <div className="w-full rounded-[18px] border border-[#dce7e1] bg-[#fffcf7] p-4 shadow-[0_14px_32px_-24px_rgba(24,53,47,.42)] transition sm:p-5">
       {/* Primary Search Bar */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Kata Kunci */}
           <div className="flex-1 relative">
-            <label htmlFor="filter-q" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+            <label htmlFor="filter-q" className="block text-[11px] font-bold text-[#60736d] uppercase tracking-wider mb-1">
               Kata Kunci / Nama Kos / Area
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">
-                <FiSearch className="w-4 h-4 text-slate-400" />
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#60736d] text-sm">
+                <FiSearch className="w-4 h-4 text-[#60736d]" />
               </span>
               <input
                 id="filter-q"
@@ -146,21 +146,21 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 placeholder="cth. Mendalo, UNJA, AC, Mandiri"
-                className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-medium"
+                className="w-full rounded-[14px] border border-[#dce7e1] bg-[#fffcf7] py-3 pl-9 pr-3 text-sm font-medium text-[#18352f] placeholder:text-[#60736d] focus:border-[#1f6b58] focus:outline-none focus:ring-2 focus:ring-[#1f6b58]/15"
               />
             </div>
           </div>
 
           {/* Kecamatan Dropdown */}
           <div className="sm:w-56">
-            <label htmlFor="filter-district" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+            <label htmlFor="filter-district" className="block text-[11px] font-bold text-[#60736d] uppercase tracking-wider mb-1">
               Kecamatan
             </label>
             <select
               id="filter-district"
               value={district}
               onChange={(e) => setDistrict(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-medium"
+              className="w-full rounded-[14px] border border-[#dce7e1] bg-[#fffcf7] px-3 py-3 text-sm font-medium text-[#18352f] focus:border-[#1f6b58] focus:outline-none focus:ring-2 focus:ring-[#1f6b58]/15"
             >
               <option value="">Semua Kecamatan</option>
               {JAMBI_DISTRICTS.map((d) => (
@@ -178,14 +178,14 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
               onClick={() => setShowAdvanced(!showAdvanced)}
               className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 h-[42px] ${
                 showAdvanced || activeFilterCount > 0
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                  ? 'bg-[#e6eee9] text-[#18352f] border-[#b9d5c7]'
+                  : 'bg-[#fffcf7] text-[#60736d] border-[#dce7e1] hover:bg-[#e6eee9]'
               }`}
               title="Filter Lanjutan"
             >
               <span className="flex items-center gap-1.5"><FiSliders className="w-3.5 h-3.5" /> Filter</span>
               {activeFilterCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold flex items-center justify-center">
+                <span className="w-5 h-5 rounded-full bg-[#1f6b58] text-white text-[10px] font-extrabold flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
@@ -193,7 +193,7 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
 
             <button
               type="submit"
-              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition shadow-sm hover:shadow flex items-center justify-center gap-1.5 h-[42px]"
+              className="min-h-11 flex-1 sm:flex-none px-6 py-2.5 rounded-[14px] bg-[#1f6b58] hover:bg-[#18352f] text-white text-sm font-bold transition shadow-sm hover:shadow hover:-translate-y-0.5 flex items-center justify-center gap-1.5 h-[42px]"
             >
               <span>Cari Kos</span>
             </button>
@@ -201,8 +201,8 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
         </div>
 
         {/* Quick Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 text-xs">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#dce7e1] text-xs">
+          <span className="text-[11px] font-bold text-[#60736d] uppercase tracking-wider">
             Filter Cepat:
           </span>
 
@@ -212,10 +212,10 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
               key={t}
               type="button"
               onClick={() => handleQuickTypeSelect(t)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition border ${
+              className={`min-h-11 px-3 py-1 rounded-full text-xs font-semibold transition border ${
                 type === t
-                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  ? 'bg-[#1f6b58] text-white border-[#1f6b58] shadow-xs'
+                  : 'bg-[#fffcf7] text-[#60736d] border-[#dce7e1] hover:bg-[#e6eee9]'
               }`}
             >
               {t === 'putra' ? (
@@ -232,10 +232,10 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
           <button
             type="button"
             onClick={() => handleQuickBudgetSelect(600000)}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition border ${
+            className={`min-h-11 px-3 py-1 rounded-full text-xs font-semibold transition border ${
               maxPrice === 600000
-                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                ? 'bg-[#1f6b58] text-white border-[#1f6b58] shadow-xs'
+                : 'bg-[#fffcf7] text-[#60736d] border-[#dce7e1] hover:bg-[#e6eee9]'
             }`}
           >
             ≤ 600rb
@@ -244,10 +244,10 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
           <button
             type="button"
             onClick={() => handleQuickBudgetSelect(1000000)}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition border ${
+            className={`min-h-11 px-3 py-1 rounded-full text-xs font-semibold transition border ${
               maxPrice === 1000000
-                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                ? 'bg-[#1f6b58] text-white border-[#1f6b58] shadow-xs'
+                : 'bg-[#fffcf7] text-[#60736d] border-[#dce7e1] hover:bg-[#e6eee9]'
             }`}
           >
             ≤ 1 Juta
@@ -258,7 +258,7 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
             <button
               type="button"
               onClick={handleReset}
-              className="text-xs text-red-600 hover:text-red-700 font-semibold ml-auto transition"
+              className="text-xs text-[#b84c4c] hover:text-[#943e3e] font-semibold ml-auto transition"
             >
               Reset Filter
             </button>
@@ -267,11 +267,11 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
 
         {/* Expandable Advanced Filter Panel */}
         {showAdvanced && (
-          <div className="pt-4 mt-2 border-t border-slate-200/80 space-y-5 animate-in fade-in duration-200">
+          <div className="pt-4 mt-2 border-t border-[#dce7e1] space-y-5 animate-in fade-in duration-200">
             {/* Kampus / Titik Acuan Jambi (F-13) */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2">
-                <span className="inline-flex items-center gap-1.5"><FiBookOpen className="w-4 h-4 text-emerald-700" /> Hitung Jarak Terdekat Dari Kampus / Pusat Kota Jambi (F-13)</span>
+              <label className="block text-xs font-bold text-[#31564c] mb-2">
+                <span className="inline-flex items-center gap-1.5"><FiBookOpen className="w-4 h-4 text-[#1f6b58]" /> Hitung Jarak Terdekat Dari Kampus / Pusat Kota Jambi (F-13)</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {CAMPUS_PRESETS.map((preset) => (
@@ -281,8 +281,8 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
                     onClick={() => handleCampusSelect(preset)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
                       selectedCampus === preset.label
-                        ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-[#1f6b58] text-white border-[#1f6b58] font-bold shadow-xs'
+                        : 'bg-[#fffcf7] text-[#60736d] border-[#dce7e1] hover:bg-[#e6eee9]'
                     }`}
                   >
                     {preset.label}
@@ -292,7 +292,7 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
             </div>
 
             {/* Rentang Harga (F-10) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3.5 bg-[#f5efe4]/50 rounded-2xl border border-[#dce7e1]">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Harga Minimum (Rp)
@@ -303,7 +303,7 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
                   placeholder="cth. 400000"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-600 font-mono"
+                  className="w-full px-3 py-2 text-xs bg-[#fffcf7] rounded-[14px] border border-[#dce7e1] focus:outline-none focus:border-[#1f6b58] focus:ring-2 focus:ring-[#1f6b58]/15 font-mono"
                 />
               </div>
 
@@ -317,14 +317,14 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
                   placeholder="cth. 1500000"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-600 font-mono"
+                  className="w-full px-3 py-2 text-xs bg-[#fffcf7] rounded-[14px] border border-[#dce7e1] focus:outline-none focus:border-[#1f6b58] focus:ring-2 focus:ring-[#1f6b58]/15 font-mono"
                 />
               </div>
             </div>
 
               {/* Periode Bayar (F-10) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">
+                <label className="block text-xs font-bold text-[#31564c] mb-2">
                   Periode Pembayaran (F-10)
                 </label>
                 <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -337,8 +337,8 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
                     key={p.value}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs cursor-pointer transition ${
                       payPeriod === p.value
-                        ? 'bg-emerald-50 border-emerald-400 text-emerald-900 font-bold'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        ? 'bg-[#e6eee9] border-[#1f6b58] text-[#18352f] font-bold'
+                        : 'bg-[#fffcf7] border-[#dce7e1] text-[#31564c] hover:bg-[#e6eee9]'
                     }`}
                   >
                     <input
@@ -347,7 +347,7 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
                       value={p.value}
                       checked={payPeriod === p.value}
                       onChange={() => setPayPeriod(p.value)}
-                      className="text-emerald-600 focus:ring-emerald-500"
+                      className="text-[#1f6b58] focus:ring-[#c9784a]"
                     />
                     <span>{p.label}</span>
                   </label>
@@ -357,10 +357,10 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
 
             {/* Fasilitas Filter (F-10) */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2">
+              <label className="block text-xs font-bold text-[#31564c] mb-2">
                 Fasilitas Kos Wajib Ada (F-10)
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-2 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-2 bg-[#f5efe4]/30 rounded-[14px] border border-[#dce7e1]">
                 {availableFacilities.map((fac) => {
                   const checked = selectedFacilities.includes(fac.id);
                   return (
@@ -368,15 +368,15 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
                       key={fac.id}
                       className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer text-xs border transition ${
                         checked
-                          ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                          ? 'bg-[#e6eee9] border-[#1f6b58] text-[#18352f] font-bold'
+                          : 'bg-[#fffcf7] border-[#dce7e1] text-[#31564c] hover:bg-[#e6eee9]'
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() => handleFacilityToggle(fac.id)}
-                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                        className="rounded text-[#1f6b58] focus:ring-[#c9784a]"
                       />
                       <span className="truncate">{fac.name}</span>
                     </label>
@@ -390,14 +390,14 @@ export default function KosFilter({ onSearch, initialValues = {} }) {
               <button
                 type="button"
                 onClick={handleReset}
-                className="text-xs text-slate-500 hover:text-slate-800 font-medium"
+                className="text-xs text-[#60736d] hover:text-[#18352f] font-medium"
               >
                 Kosongkan Semua Filter
               </button>
 
               <button
                 type="submit"
-                className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-xs"
+                className="px-5 py-2 text-xs font-bold text-white bg-[#1f6b58] hover:bg-[#18352f] rounded-[14px] transition shadow-xs hover:-translate-y-0.5"
               >
                 Terapkan & Cari Kos
               </button>
